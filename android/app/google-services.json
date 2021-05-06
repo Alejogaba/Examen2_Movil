@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "7458747091",
+    "project_id": "libro-de-cobros-flutter",
+    "storage_bucket": "libro-de-cobros-flutter.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:7458747091:android:a178986e017f96456c1a26",
+        "android_client_info": {
+          "package_name": "com.librocobros.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "7458747091-qfpdd6aakrd2prsd6mounjobloac305r.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAZihXTpRXhThAIMCZHXP3ehVU4K8reBPw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "7458747091-qfpdd6aakrd2prsd6mounjobloac305r.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
