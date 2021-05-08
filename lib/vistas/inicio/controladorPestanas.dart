@@ -3,8 +3,8 @@ import 'package:libro_de_cobros/entidades/usuario.dart';
 import 'package:libro_de_cobros/servicios/auth.dart';
 import 'package:libro_de_cobros/vistas/autenticar/iniciarSesion.dart';
 import 'package:libro_de_cobros/vistas/inicio/listaPersonal.dart';
-import 'package:libro_de_cobros/vistas/formularios/adicionarPaciente.dart';
-import 'package:libro_de_cobros/vistas/formularios/adicionarPersonal.dart';
+import 'package:libro_de_cobros/vistas/formularios/adicionarModificarPaciente.dart';
+import 'package:libro_de_cobros/vistas/formularios/adicionarModificarPersonal.dart';
 
 class ControladorPestanas extends StatefulWidget {
   ControladorPestanas({Key key}) : super(key: key);
@@ -34,15 +34,15 @@ class _ControladorPestanasState extends State<ControladorPestanas> {
             switch (indextab) {
               case 0:
                 Navigator.push(context,
-                    MaterialPageRoute(builder: (_) => AdicionarPersonal()));
+                    MaterialPageRoute(builder: (_) => AdicionarModificarPersonal()));
                 break;
               case 1:
                 Navigator.push(context,
-                    MaterialPageRoute(builder: (_) => AdicionarPaciente()));
+                    MaterialPageRoute(builder: (_) => AdicionarModificarPaciente()));
                 break;
               default:
                 Navigator.push(context,
-                    MaterialPageRoute(builder: (_) => AdicionarPersonal()));
+                    MaterialPageRoute(builder: (_) => AdicionarModificarPersonal()));
                 break;
             }
           },

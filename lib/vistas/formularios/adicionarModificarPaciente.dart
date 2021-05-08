@@ -9,12 +9,49 @@ import 'package:libro_de_cobros/servicios/imageStorage.dart';
 import 'package:libro_de_cobros/vistas/generalWidgets/customTextFormField.dart';
 import 'package:libro_de_cobros/vistas/inicio/principal.dart';
 
-class AdicionarPaciente extends StatefulWidget {
+class AdicionarModificarPaciente extends StatefulWidget {
+  final nombre;
+  final apellido;
+  final urlImagen;
+  final estado;
+  final fechaNacimiento;
+  final telefono;
+  final ciudad;
+  final barrio;
+  final direccion;
+  final idPaciente;
+  final modoEditar;
+
+  const AdicionarModificarPaciente(
+      {Key key,
+      this.nombre,
+      this.apellido,
+      this.fechaNacimiento,
+      this.urlImagen,
+      this.estado,
+      this.telefono,
+      this.ciudad,
+      this.barrio,
+      this.direccion,
+      this.idPaciente,
+      this.modoEditar})
+      : super(key: key);
   @override
-  _AdicionarPacienteState createState() => _AdicionarPacienteState();
+  _AdicionarModificarPacienteState createState() => _AdicionarModificarPacienteState(
+      this.nombre,
+      this.apellido,
+      this.fechaNacimiento,
+      this.urlImagen,
+      this.estado,
+      this.telefono,
+      this.ciudad,
+      this.barrio,
+      this.direccion,
+      this.idPaciente,
+      this.modoEditar);
 }
 
-class _AdicionarPacienteState extends State<AdicionarPaciente> {
+class _AdicionarModificarPacienteState extends State<AdicionarModificarPaciente> {
   TextEditingController controlNombre = TextEditingController();
   TextEditingController controlApellido = TextEditingController();
   TextEditingController controlIdentificacion = TextEditingController();
@@ -22,13 +59,15 @@ class _AdicionarPacienteState extends State<AdicionarPaciente> {
   TextEditingController controlDireccion = TextEditingController();
   TextEditingController controlBarrio = TextEditingController();
   TextEditingController controlTelefono = TextEditingController();
+  TextEditingController controlCiudad = TextEditingController();
+  TextEditingController controlFecha = TextEditingController();
   TextEditingController controladorimagenUrl = new TextEditingController();
   List<String> listaTipo = ["Medico", "Enfermero", "Fisioterapeuta"];
   String tipo = '';
   String trabajando;
   String urlImagen;
   File imageFile;
-  
+
   DateTime fechaSeleccionada;
   DateTime fechaNacimiento;
 
@@ -37,18 +76,61 @@ class _AdicionarPacienteState extends State<AdicionarPaciente> {
   final AuthService _auth = AuthService();
   final _formKey = GlobalKey<FormState>();
 
+  String nombre;
+  String apellido;
+  DateTime fechaNacimientoEdit;
+  bool estadoEdit;
+  String telefono;
+  String ciudad;
+  String barrio;
+  String direccion;
+  String idPaciente;
+  bool modoEditar = false;
+
+  _AdicionarModificarPacienteState(
+      this.nombre,
+      this.apellido,
+      this.fechaNacimientoEdit,
+      this.urlImagen,
+      this.estadoEdit,
+      this.telefono,
+      this.ciudad,
+      this.barrio,
+      this.direccion,
+      this.idPaciente,
+      this.modoEditar);
+
   @override
   void initState() {
-    if (fechaNacimiento != null) {
-      fechaSeleccionada = fechaNacimiento;
+    if (fechaNacimientoEdit != null) {
+      fechaSeleccionada = fechaNacimientoEdit;
+      controlFecha.text = fechaNacimientoEdit.toString().split(' ')[0];
     } else {
       fechaSeleccionada = DateTime.now();
     }
-    if (urlImagen != null) {
-      controladorimagenUrl.text = urlImagen;
-    } else {
-      controladorimagenUrl.text =
-          "https://www.adl-logistica.org/wp-content/uploads/2019/07/imagen-perfil-sin-foto-300x300.png";
+    if (nombre != null) {
+      controlNombre.text = nombre;
+    }
+    if (apellido != null) {
+      controlApellido.text = apellido;
+    }
+    if (idPaciente != null) {
+      controlIdentificacion.text = idPaciente;
+    }
+    if (ciudad != null) {
+      controlCiudad.text = ciudad;
+    }
+    if (barrio != null) {
+      controlBarrio.text = barrio;
+    }
+    if (direccion != null) {
+      controlDireccion.text = direccion;
+    }
+    if (telefono != null) {
+      controlTelefono.text = telefono;
+    }
+    if (estadoEdit != null) {
+      estaActivo = estadoEdit;
     }
     super.initState();
   }
@@ -57,7 +139,9 @@ class _AdicionarPacienteState extends State<AdicionarPaciente> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Adicionar Paciente"),
+        title: !modoEditar
+            ? Text("Adicionar Paciente")
+            : Text("Modificar Paciente"),
       ),
       body: Form(
         key: _formKey,
@@ -72,9 +156,15 @@ class _AdicionarPacienteState extends State<AdicionarPaciente> {
                       width: 190,
                       height: 190,
                       decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                      ),
-                      child: _decideImageView()),
+                          shape: BoxShape.circle,
+                          image: urlImagen != null && imageFile == null
+                              ? DecorationImage(
+                                  fit: BoxFit.fill,
+                                  image: NetworkImage(urlImagen))
+                              : null),
+                      child: urlImagen == null || imageFile != null
+                          ? _decideImageView()
+                          : null),
                 ),
                 Padding(
                   padding: EdgeInsets.all(10),
@@ -99,40 +189,40 @@ class _AdicionarPacienteState extends State<AdicionarPaciente> {
                 CustomTextFormField(
                     customController: controlApellido, labelText: "Apellido"),
                 Padding(
-                padding: EdgeInsets.all(15.0),
-                child: TextField(
-                  readOnly: true,
-                  style: TextStyle(fontSize: 20),
-                  controller: null,
-                  decoration: InputDecoration(
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.all(
-                          Radius.circular(30.0),
+                  padding: EdgeInsets.all(15.0),
+                  child: TextField(
+                    readOnly: true,
+                    style: TextStyle(fontSize: 20),
+                    controller: controlFecha,
+                    onTap: (){
+                       _selectDate(context);
+                    },
+                    decoration: InputDecoration(
+                        suffixIcon: IconButton(
+                          icon: Icon(Icons.date_range),
+                          onPressed: () {
+                           
+                          },
                         ),
-                      ),
-                      suffixIcon: IconButton(
-                        icon: Icon(Icons.date_range),
-                        onPressed: () {
-                          _selectDate(context);
-                        },
-                      ),
-                      filled: true,
-                      hintStyle: TextStyle(fontSize: 20),
-                      labelStyle: TextStyle(fontSize: 20),
-                      hintText: fechaSeleccionada.toLocal().toString().split(' ')[0],
-                      labelText: "Fecha de nacimiento",
-                      fillColor: Colors.white70),
+                        filled: true,
+                        hintStyle: TextStyle(fontSize: 20),
+                        labelStyle: TextStyle(fontSize: 20),
+                        hintText: fechaSeleccionada
+                            .toLocal()
+                            .toString()
+                            .split(' ')[0],
+                        labelText: "Fecha de nacimiento",
+                        fillColor: Colors.transparent),
+                  ),
                 ),
-              ),
                 CustomTextFormField(
-                    customController: controlDireccion,
-                    labelText: "Dirección"),
+                    customController: controlDireccion, labelText: "Dirección"),
                 CustomTextFormField(
-                    customController: controlBarrio,
-                    labelText: "Barrio"),
-                 CustomTextFormField(
-                    customController: controlTelefono,
-                    labelText: "Teléfono"),   
+                    customController: controlBarrio, labelText: "Barrio"),
+                CustomTextFormField(
+                    customController: controlCiudad, labelText: "Ciudad"),
+                CustomTextFormField(
+                    customController: controlTelefono, labelText: "Teléfono"),
                 SwitchListTile(
                   title: Text('¿Esta activo?'),
                   value: estaActivo,
@@ -142,31 +232,33 @@ class _AdicionarPacienteState extends State<AdicionarPaciente> {
                     });
                   },
                 ),
-             
-                ElevatedButton(
-                  child: Text("Adicionar Paciente"),
+                ElevatedButton.icon(
+                  label: !modoEditar
+                      ? Text("Adicionar Paciente")
+                      : Text('Modificar Paciente'),
+                  icon: !modoEditar ? Icon(Icons.add) : Icon(Icons.edit),
                   onPressed: () async {
                     if (_formKey.currentState.validate()) {
-                        if (imageFile != null) {
-                          await ImageStorage(
-                                  file: imageFile, idPaciente: controlIdentificacion.text)
-                              .subirImagenPaciente();
-                        }
-                        await DatabaseService()
-                            .insertarDatosPaciente(
-                                controlIdentificacion.text,
-                                controlNombre.text,
-                                controlApellido.text,
-                                "https://firebasestorage.googleapis.com/v0/b/libro-de-cobros-flutter.appspot.com/o/Pacientes%2F" +
-                                    controlIdentificacion.text +
-                                    ".jpg?alt=media&token=25e31b9e-51ce-4027-a163-cb4418e81e41",
-                                fechaSeleccionada,
-                                calcularEdad(fechaSeleccionada),
-                                estaActivo,
-                                controlDireccion.text,
-                                controlBarrio.text,
-                                controlTelefono.text);
-                        Navigator.pop(context);   
+                      if (imageFile != null) {
+                        await ImageStorage(
+                                file: imageFile,
+                                idPaciente: controlIdentificacion.text)
+                            .subirImagenPaciente();
+                      }
+                      await DatabaseService().insertarDatosPaciente(
+                          controlIdentificacion.text,
+                          controlNombre.text,
+                          controlApellido.text,
+                          "https://firebasestorage.googleapis.com/v0/b/libro-de-cobros-flutter.appspot.com/o/Pacientes%2F" +
+                              controlIdentificacion.text +
+                              ".jpg?alt=media&token=25e31b9e-51ce-4027-a163-cb4418e81e41",
+                          fechaSeleccionada,
+                          calcularEdad(fechaSeleccionada),
+                          estaActivo,
+                          controlDireccion.text,
+                          controlBarrio.text,
+                          controlTelefono.text);
+                      Navigator.pop(context);
                     }
                   },
                 ),
@@ -254,7 +346,7 @@ class _AdicionarPacienteState extends State<AdicionarPaciente> {
     }
   }
 
-    Future<void> _selectDate(BuildContext context) async {
+  Future<void> _selectDate(BuildContext context) async {
     final DateTime picked = await showDatePicker(
         context: context,
         initialDate: fechaSeleccionada,
@@ -263,10 +355,10 @@ class _AdicionarPacienteState extends State<AdicionarPaciente> {
     if (picked != null && picked != fechaSeleccionada)
       setState(() {
         fechaSeleccionada = picked;
+        controlFecha.text = picked.toString().split(' ')[0];
       });
   }
 
-  
   calcularEdad(DateTime fechaNacimiento) {
     DateTime fechaActual = DateTime.now();
     int age = fechaActual.year - fechaNacimiento.year;

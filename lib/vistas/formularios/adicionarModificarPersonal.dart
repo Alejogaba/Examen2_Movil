@@ -9,12 +9,46 @@ import 'package:libro_de_cobros/servicios/imageStorage.dart';
 import 'package:libro_de_cobros/vistas/generalWidgets/customTextFormField.dart';
 import 'package:libro_de_cobros/vistas/inicio/principal.dart';
 
-class AdicionarPersonal extends StatefulWidget {
+class AdicionarModificarPersonal extends StatefulWidget {
+  final nombre;
+  final apellido;
+  final tipo;
+  final trabajando;
+  final email;
+  final contrasena;
+  final urlImagen;
+  final estado;
+  final uid;
+
+  const AdicionarModificarPersonal(
+      {Key key,
+      this.nombre,
+      this.apellido,
+      this.tipo,
+      this.trabajando,
+      this.email,
+      this.contrasena,
+      this.urlImagen,
+      this.estado,
+      this.uid})
+      : super(key: key);
+
   @override
-  _AdicionarPersonalState createState() => _AdicionarPersonalState();
+  _AdicionarModificarPersonalState createState() =>
+      _AdicionarModificarPersonalState(
+          this.nombre,
+          this.apellido,
+          this.tipo,
+          this.trabajando,
+          this.email,
+          this.contrasena,
+          this.urlImagen,
+          this.estado,
+          this.uid);
 }
 
-class _AdicionarPersonalState extends State<AdicionarPersonal> {
+class _AdicionarModificarPersonalState
+    extends State<AdicionarModificarPersonal> {
   TextEditingController controlNombre = TextEditingController();
   TextEditingController controlApellido = TextEditingController();
   TextEditingController controlTipo = TextEditingController();
@@ -34,13 +68,49 @@ class _AdicionarPersonalState extends State<AdicionarPersonal> {
   final AuthService _auth = AuthService();
   final _formKey = GlobalKey<FormState>();
 
+  String nombre;
+  String apellido;
+  String tipoEdit;
+  String trabajandoEdit;
+  String email;
+  String contrasena;
+  bool estado;
+  String uid;
+
+  _AdicionarModificarPersonalState(
+      this.nombre,
+      this.apellido,
+      this.tipoEdit,
+      this.trabajandoEdit,
+      this.email,
+      this.contrasena,
+      this.urlImagen,
+      this.estado,
+      this.uid);
+
   @override
   void initState() {
-    if (urlImagen != null) {
-      controladorimagenUrl.text = urlImagen;
-    } else {
-      controladorimagenUrl.text =
-          "https://www.adl-logistica.org/wp-content/uploads/2019/07/imagen-perfil-sin-foto-300x300.png";
+    if (nombre != null) {
+      controlNombre.text = nombre;
+    }
+    if (apellido != null) {
+      controlApellido.text = apellido;
+    }
+    if (tipoEdit != null) {
+      controlTipo.text = tipoEdit;
+    }
+    if (email != null) {
+      controlEmail.text = email;
+    }
+    if (contrasena != null) {
+      controlContrasena.text = contrasena;
+    }
+    if (estado != null) {
+      estaActivo = estado;
+    }
+    if (trabajandoEdit != null) {
+      estaTrabajando = trabajandoEdit == 'En servicio' ? true : false;
+      trabajando = trabajandoEdit;
     }
     super.initState();
   }
@@ -50,7 +120,7 @@ class _AdicionarPersonalState extends State<AdicionarPersonal> {
     // TODO: implement build
     return Scaffold(
       appBar: AppBar(
-        title: Text("Adicionar Personal"),
+        title: uid==null ? Text("Adicionar personal Medico") : Text("Modificar personal medico"),
       ),
       body: Form(
         key: _formKey,
@@ -65,14 +135,15 @@ class _AdicionarPersonalState extends State<AdicionarPersonal> {
                       width: 190,
                       height: 190,
                       decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        /* image: DecorationImage(
-                            fit: BoxFit.fill,
-                            image: NetworkImage(
-                                "https://www.adl-logistica.org/wp-content/uploads/2019/07/imagen-perfil-sin-foto-300x300.png")
-                                )*/
-                      ),
-                      child: _decideImageView()),
+                          shape: BoxShape.circle,
+                          image: urlImagen != null && imageFile == null
+                              ? DecorationImage(
+                                  fit: BoxFit.fill,
+                                  image: NetworkImage(urlImagen))
+                              : null),
+                      child: urlImagen == null || imageFile != null
+                          ? _decideImageView()
+                          : null),
                 ),
                 Padding(
                   padding: EdgeInsets.all(10),
@@ -137,39 +208,60 @@ class _AdicionarPersonalState extends State<AdicionarPersonal> {
                   onChanged: (bool value) {
                     setState(() {
                       estaTrabajando = value;
-                      trabajando =  value ? "En servicio" : "Libre";
+                      trabajando = value ? "En servicio" : "Libre";
                     });
                   },
                 ),
-                ElevatedButton(
-                  child: Text("Adicionar Personal"),
+                ElevatedButton.icon(
+                  label: uid==null?Text("Adicionar Personal"): Text('Modificar Personal'),
+                  icon: uid==null ? Icon(Icons.add):Icon(Icons.edit),
                   onPressed: () async {
                     if (_formKey.currentState.validate()) {
-                      dynamic result = await _auth.registerWithEmailAndPassword(
-                          controlEmail.text.trim(),
-                          controlContrasena.text.trim());
-                      if (result == null) {
-                        setState(() {
-                          print('Please supply a valid email');
-                        });
+                      if (uid == null) {
+                        dynamic result =
+                            await _auth.registerWithEmailAndPassword(
+                                controlEmail.text.trim(),
+                                controlContrasena.text.trim());
+                        if (result == null) {
+                          setState(() {
+                            print('Please supply a valid email');
+                          });
+                        } else {
+                          if (imageFile != null) {
+                            await ImageStorage(
+                                    file: imageFile, uid: result.uid.toString())
+                                .subirImagenPersonal();
+                          }
+                          await DatabaseService(uid: result.uid.toString())
+                              .insertarDatosPersonal(
+                                  controlEmail.text,
+                                  controlContrasena.text,
+                                  controlNombre.text,
+                                  controlApellido.text,
+                                  "https://firebasestorage.googleapis.com/v0/b/libro-de-cobros-flutter.appspot.com/o/Personal%2F" +
+                                      result.uid.toString() +
+                                      ".jpg?alt=media&token=25e31b9e-51ce-4027-a163-cb4418e81e41",
+                                  controlTipo.text,
+                                  estaActivo,
+                                  trabajando);
+                          Navigator.pop(context);
+                        }
                       } else {
                         if (imageFile != null) {
-                          await ImageStorage(
-                                  file: imageFile, uid: result.uid.toString())
+                          await ImageStorage(file: imageFile, uid: uid)
                               .subirImagenPersonal();
                         }
-                        await DatabaseService(uid: result.uid.toString())
-                            .insertarDatosPersonal(
-                                controlEmail.text,
-                                controlContrasena.text,
-                                controlNombre.text,
-                                controlApellido.text,
-                                "https://firebasestorage.googleapis.com/v0/b/libro-de-cobros-flutter.appspot.com/o/Personal%2F" +
-                                    result.uid.toString() +
-                                    ".jpg?alt=media&token=25e31b9e-51ce-4027-a163-cb4418e81e41",
-                                controlTipo.text,
-                                estaActivo,
-                                trabajando);
+                        await DatabaseService(uid: uid).insertarDatosPersonal(
+                            controlEmail.text,
+                            controlContrasena.text,
+                            controlNombre.text,
+                            controlApellido.text,
+                            "https://firebasestorage.googleapis.com/v0/b/libro-de-cobros-flutter.appspot.com/o/Personal%2F" +
+                                uid +
+                                ".jpg?alt=media&token=25e31b9e-51ce-4027-a163-cb4418e81e41",
+                            controlTipo.text,
+                            estaActivo,
+                            trabajando);
                         Navigator.pop(context);
                       }
                     }

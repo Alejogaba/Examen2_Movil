@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:libro_de_cobros/entidades/paciente.dart';
 import 'package:libro_de_cobros/entidades/personal.dart';
 import 'package:libro_de_cobros/vistas/generalWidgets/loading.dart';
+import 'package:libro_de_cobros/vistas/perfil/perfilPaciente.dart';
 import 'package:provider/provider.dart';
 
 class ListaPacientes extends StatefulWidget {
@@ -31,11 +32,11 @@ class _ListaPacientesState extends State<ListaPacientes> {
             return ListTile(
               onTap: (){
                 if (modoSeleccionar==false || modoSeleccionar==null) {
-               /* Navigator.push(
+                Navigator.push(
                     context,
                     MaterialPageRoute(
-                        builder: (_) => PerfilPersonal(
-                            perfil: _listaPersonal, index: index)));*/
+                        builder: (_) => PerfilPaciente(
+                            perfil: _listaPacientes, index: index)));
               } else {
                 Navigator.pop(contextPadre,_listaPacientes[index]);
               }

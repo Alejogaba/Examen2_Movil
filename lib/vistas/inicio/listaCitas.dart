@@ -4,6 +4,7 @@ import 'package:libro_de_cobros/entidades/cita.dart';
 import 'package:libro_de_cobros/entidades/paciente.dart';
 import 'package:libro_de_cobros/entidades/personal.dart';
 import 'package:libro_de_cobros/vistas/generalWidgets/loading.dart';
+import 'package:libro_de_cobros/vistas/perfil/perfilCita.dart';
 import 'package:provider/provider.dart';
 
 class ListaCitas extends StatefulWidget {
@@ -27,12 +28,11 @@ class _ListaCitasState extends State<ListaCitas> {
           itemBuilder: (context, index) {
             return ListTile(
               onTap: (){
-                
-               /* Navigator.push(
+                 Navigator.push(
                     context,
                     MaterialPageRoute(
-                        builder: (_) => PerfilPersonal(
-                            perfil: _listaPersonal, index: index)));*/
+                        builder: (_) => PerfilCita(
+                            perfil: _listaCitas, index: index)));
               
               },
               onLongPress: () {

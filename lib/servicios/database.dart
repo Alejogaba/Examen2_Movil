@@ -140,6 +140,80 @@ class DatabaseService {
     }).toList();
   }
 
+  //Eliminar personal medico en firestore
+  Future<void> eliminarPersonal(List<Cita> citasPendientes) async {
+    final CollectionReference collection =
+        Firestore.instance.collection('Personal');
+    if (citasPendientes.length > 0) {
+      for (var item in citasPendientes) {
+        await eliminarCita(item.idCita);
+        print('Cita: ' + item.idCita + ' eliminada');
+      }
+    }
+    return await collection.document(uid).delete();
+  }
+
+  //Eliminar paciente en firestore
+  Future<void> eliminarPaciente(List<Cita> citasPendientes,String idPaciente) async {
+    final CollectionReference collection =
+        Firestore.instance.collection('Pacientes');
+    if (citasPendientes.length > 0) {
+      for (var item in citasPendientes) {
+        await eliminarCita(item.idCita);
+        print('Cita: ' + item.idCita + ' eliminada');
+      }
+    }
+    return await collection.document(idPaciente).delete();
+  }
+
+  //Eliminar cita
+  Future<void> eliminarCita(String idCita) async {
+    final CollectionReference collection =
+        Firestore.instance.collection('Citas');
+    return await collection.document(idCita).delete();
+  }
+
+  citasPendientesPersonal(String uidPersonalMedico) async {
+    QuerySnapshot _myDoc = await Firestore.instance
+        .collection('Citas')
+        .where('uidPersonalMedico', isEqualTo: uidPersonalMedico)
+        .where('estado', isEqualTo:'Asignado').getDocuments();
+    List<DocumentSnapshot> _myDocCount = _myDoc.documents;
+    return _myDocCount.map((doc) {
+      return Cita(
+        uidPersonalMedico: doc.data['uidPersonalMedico'] ?? '',
+        nombrePersonalMedico: doc.data['nombrePersonalMedico'] ?? '',
+        idPaciente: doc.data['idPaciente'] ?? '',
+        nombrePaciente: doc.data['nombrePaciente'] ?? '',
+        idCita: doc.data['idCita'] ?? '',
+        fechaHora: doc.data['fechaHora'] ?? '',
+        hora: doc.data['hora'] ?? '',
+        estado: doc.data['estado'] ?? '',
+        urlImagen: doc.data['urlImagen'] ?? '',
+      );
+    }).toList(); // Count of Documents in Collection
+  }
+
+  citasPendientesPaciente(String idPaciente) async {
+    QuerySnapshot _myDoc = await Firestore.instance
+        .collection('Citas')
+        .where('idPaciente', isEqualTo: idPaciente).getDocuments();
+    List<DocumentSnapshot> _myDocCount = _myDoc.documents;
+    return _myDocCount.map((doc) {
+      return Cita(
+        uidPersonalMedico: doc.data['uidPersonalMedico'] ?? '',
+        nombrePersonalMedico: doc.data['nombrePersonalMedico'] ?? '',
+        idPaciente: doc.data['idPaciente'] ?? '',
+        nombrePaciente: doc.data['nombrePaciente'] ?? '',
+        idCita: doc.data['idCita'] ?? '',
+        fechaHora: doc.data['fechaHora'] ?? '',
+        hora: doc.data['hora'] ?? '',
+        estado: doc.data['estado'] ?? '',
+        urlImagen: doc.data['urlImagen'] ?? '',
+      );
+    }).toList(); // Count of Documents in Collection
+  }
+
   Stream<List<Paciente>> get usuariosPacientes {
     try {
       final CollectionReference collection =
