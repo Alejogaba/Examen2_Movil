@@ -2,12 +2,9 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:libro_de_cobros/entidades/usuario.dart';
-import 'package:libro_de_cobros/servicios/auth.dart';
 import 'package:libro_de_cobros/servicios/database.dart';
 import 'package:libro_de_cobros/servicios/imageStorage.dart';
 import 'package:libro_de_cobros/vistas/generalWidgets/customTextFormField.dart';
-import 'package:libro_de_cobros/vistas/inicio/principal.dart';
 
 class AdicionarModificarPaciente extends StatefulWidget {
   final nombre;
@@ -73,7 +70,6 @@ class _AdicionarModificarPacienteState extends State<AdicionarModificarPaciente>
 
   bool estaActivo = false;
   bool estaTrabajando = false;
-  final AuthService _auth = AuthService();
   final _formKey = GlobalKey<FormState>();
 
   String nombre;

@@ -5,9 +5,7 @@ import 'package:libro_de_cobros/servicios/auth.dart';
 import 'package:libro_de_cobros/servicios/database.dart';
 import 'package:libro_de_cobros/vistas/generalWidgets/themeData.dart';
 import 'package:libro_de_cobros/vistas/inicio/listaPacientes.dart';
-import '../../entidades/usuario.dart';
 import 'package:provider/provider.dart';
-import 'package:libro_de_cobros/vistas/inicio/listaPersonal.dart';
 
 class BuscarPaciente extends StatefulWidget {
   BuscarPaciente({Key key}) : super(key: key);
@@ -18,7 +16,6 @@ class BuscarPaciente extends StatefulWidget {
 
 class _BuscarPersonal2State extends State<BuscarPaciente>
     with SingleTickerProviderStateMixin {
-  List<Usuario> _clientes = [];
   AuthService authService = new AuthService();
   String uid = '';
   dynamic providerTipo = Personal;
@@ -80,41 +77,6 @@ class _BuscarPersonal2State extends State<BuscarPaciente>
       }
     }
     return age;
-  }
-
-  _eliminarcliente(context, Usuario client) {
-    showDialog(
-        context: context,
-        builder: (_) => AlertDialog(
-              title: Text('Eliminar cliente'),
-              content: Text('¿Desea eliminar a ' +
-                  client.nombre +
-                  ' ' +
-                  client.apellido +
-                  '?'),
-              actions: [
-                TextButton(
-                    onPressed: () {
-                      setState(() {
-                        _clientes.remove(client);
-                        Navigator.of(context, rootNavigator: true)
-                            .pop('dialog');
-                      });
-                    },
-                    child: Text(
-                      'Eliminar',
-                      style: TextStyle(color: Colors.red),
-                    )),
-                TextButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-                    child: Text(
-                      'Cancelar',
-                      style: TextStyle(color: Colors.blueGrey),
-                    ))
-              ],
-            ));
   }
 
   

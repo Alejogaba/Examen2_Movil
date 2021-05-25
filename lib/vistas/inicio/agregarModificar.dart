@@ -2,7 +2,6 @@ import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:libro_de_cobros/servicios/imageStorage.dart';
-import 'package:libro_de_cobros/vistas/generalWidgets/subirImagenButton.dart';
 import '../../entidades/usuario.dart';
 
 class AgregarModificar extends StatefulWidget {

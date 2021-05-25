@@ -1,6 +1,4 @@
 import 'dart:io';
-
-import 'package:flutter/material.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 
 class ImageStorage {
@@ -11,10 +9,10 @@ class ImageStorage {
 
   final StorageReference storage = FirebaseStorage().ref();
 
-//Subir imagen Personal
+//Subir imagen del Personal medico
   Future<void> subirImagenPersonal() async {
     try {
-      await storage.child('/Personal/' + uid + ".jpg").putFile(file);
+      storage.child('/Personal/' + uid + ".jpg").putFile(file);
       print("Imagen subida con exito");
     } catch (e) {
       // e.g, e.code == 'canceled'
@@ -22,10 +20,10 @@ class ImageStorage {
     }
   }
 
-//Subir imagen Paciente
+//Subir imagen del Paciente
   Future<void> subirImagenPaciente() async {
     try {
-      await storage.child('/Pacientes/' +idPaciente+ ".jpg").putFile(file);
+      storage.child('/Pacientes/' +idPaciente+ ".jpg").putFile(file);
       print("Imagen subida con exito");
     } catch (e) {
       // e.g, e.code == 'canceled'

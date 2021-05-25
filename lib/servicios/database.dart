@@ -166,13 +166,14 @@ class DatabaseService {
     return await collection.document(idPaciente).delete();
   }
 
-  //Eliminar cita
+  //Eliminar cita en firestore
   Future<void> eliminarCita(String idCita) async {
     final CollectionReference collection =
         Firestore.instance.collection('Citas');
     return await collection.document(idCita).delete();
   }
 
+//Buscar las citas pendientes del personal medico
   citasPendientesPersonal(String uidPersonalMedico) async {
     QuerySnapshot _myDoc = await Firestore.instance
         .collection('Citas')
@@ -194,6 +195,7 @@ class DatabaseService {
     }).toList(); // Count of Documents in Collection
   }
 
+//Buscar las citas pendientes de los pacientes 
   citasPendientesPaciente(String idPaciente) async {
     QuerySnapshot _myDoc = await Firestore.instance
         .collection('Citas')
@@ -211,7 +213,7 @@ class DatabaseService {
         estado: doc.data['estado'] ?? '',
         urlImagen: doc.data['urlImagen'] ?? '',
       );
-    }).toList(); // Count of Documents in Collection
+    }).toList();
   }
 
   Stream<List<Paciente>> get usuariosPacientes {

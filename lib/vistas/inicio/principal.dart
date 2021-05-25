@@ -1,20 +1,13 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:libro_de_cobros/entidades/paciente.dart';
 import 'package:libro_de_cobros/entidades/personal.dart';
 import 'package:libro_de_cobros/servicios/auth.dart';
 import 'package:libro_de_cobros/servicios/database.dart';
 import 'package:libro_de_cobros/vistas/autenticar/iniciarSesion.dart';
 import 'package:libro_de_cobros/vistas/formularios/agendarCita.dart';
-import 'package:libro_de_cobros/vistas/inicio/controladorPestanas.dart';
-import 'package:libro_de_cobros/vistas/inicio/listaPacientes.dart';
 import 'package:libro_de_cobros/vistas/inicio/ventanaListaCitas.dart';
 import 'package:libro_de_cobros/vistas/inicio/ventanaListaPacientes.dart';
 import 'package:libro_de_cobros/vistas/formularios/adicionarModificarPaciente.dart';
 import 'package:libro_de_cobros/vistas/formularios/adicionarModificarPersonal.dart';
-import 'agregarModificar.dart';
-import '../../entidades/usuario.dart';
 import 'package:provider/provider.dart';
 import 'package:libro_de_cobros/vistas/inicio/listaPersonal.dart';
 
@@ -27,7 +20,6 @@ class Principal extends StatefulWidget {
 
 class _PrincipalState extends State<Principal>
     with SingleTickerProviderStateMixin {
-  List<Usuario> _clientes = [];
   AuthService authService = new AuthService();
   String uid = '';
   dynamic providerTipo = Personal;
@@ -169,40 +161,6 @@ class _PrincipalState extends State<Principal>
     return age;
   }
 
-  _eliminarcliente(context, Usuario client) {
-    showDialog(
-        context: context,
-        builder: (_) => AlertDialog(
-              title: Text('Eliminar cliente'),
-              content: Text('¿Desea eliminar a ' +
-                  client.nombre +
-                  ' ' +
-                  client.apellido +
-                  '?'),
-              actions: [
-                TextButton(
-                    onPressed: () {
-                      setState(() {
-                        _clientes.remove(client);
-                        Navigator.of(context, rootNavigator: true)
-                            .pop('dialog');
-                      });
-                    },
-                    child: Text(
-                      'Eliminar',
-                      style: TextStyle(color: Colors.red),
-                    )),
-                TextButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-                    child: Text(
-                      'Cancelar',
-                      style: TextStyle(color: Colors.blueGrey),
-                    ))
-              ],
-            ));
-  }
 
   getUid() async {
     uid = await authService.getCurrentUid();

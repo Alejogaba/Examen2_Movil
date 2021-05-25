@@ -1,8 +1,5 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:libro_de_cobros/entidades/cita.dart';
-import 'package:libro_de_cobros/entidades/paciente.dart';
-import 'package:libro_de_cobros/entidades/personal.dart';
 import 'package:libro_de_cobros/vistas/generalWidgets/loading.dart';
 import 'package:libro_de_cobros/vistas/perfil/perfilCita.dart';
 import 'package:provider/provider.dart';

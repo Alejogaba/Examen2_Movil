@@ -1,13 +1,10 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:libro_de_cobros/entidades/usuario.dart';
 import 'package:libro_de_cobros/servicios/auth.dart';
 import 'package:libro_de_cobros/servicios/database.dart';
 import 'package:libro_de_cobros/servicios/imageStorage.dart';
 import 'package:libro_de_cobros/vistas/generalWidgets/customTextFormField.dart';
-import 'package:libro_de_cobros/vistas/inicio/principal.dart';
 
 class AdicionarModificarPersonal extends StatefulWidget {
   final nombre;
@@ -117,7 +114,6 @@ class _AdicionarModificarPersonalState
 
   @override
   Widget build(BuildContext context) {
-    // TODO: implement build
     return Scaffold(
       appBar: AppBar(
         title: uid==null ? Text("Adicionar personal Medico") : Text("Modificar personal medico"),
@@ -219,7 +215,7 @@ class _AdicionarModificarPersonalState
                     if (_formKey.currentState.validate()) {
                       if (uid == null) {
                         dynamic result =
-                            await _auth.registerWithEmailAndPassword(
+                            await _auth.registroConUsuarioyContrasena(
                                 controlEmail.text.trim(),
                                 controlContrasena.text.trim());
                         if (result == null) {

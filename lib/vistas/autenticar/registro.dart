@@ -1,11 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:libro_de_cobros/servicios/auth.dart';
-import 'package:libro_de_cobros/servicios/database.dart';
-import 'package:libro_de_cobros/vistas/autenticar/registro.dart';
 import 'package:libro_de_cobros/vistas/inicio/principal.dart';
-import '../generalWidgets/customTextField.dart';
-import '../generalWidgets/customElevatedButton.dart';
-import '../generalWidgets/customTextButton.dart';
 
 class Registro extends StatefulWidget {
   Registro({Key key}) : super(key: key);
@@ -97,7 +92,7 @@ class _RegistroState extends State<Registro> {
                     onPressed: () async {
                       if (_formKey.currentState.validate()) {
                         dynamic result =
-                            await _auth.registerWithEmailAndPassword(
+                            await _auth.registroConUsuarioyContrasena(
                                 usernameController.text.trim(),
                                 passwordController.text.trim());
                         if (result == null) {

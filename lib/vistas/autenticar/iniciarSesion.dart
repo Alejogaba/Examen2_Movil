@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:libro_de_cobros/servicios/auth.dart';
-import 'package:libro_de_cobros/vistas/autenticar/registro.dart';
 import 'package:libro_de_cobros/vistas/inicio/principal.dart';
 import '../generalWidgets/customTextField.dart';
-import '../generalWidgets/customElevatedButton.dart';
 
 class IniciarSesion extends StatefulWidget {
   IniciarSesion({Key key}) : super(key: key);
@@ -19,7 +17,7 @@ class _IniciarSesionState extends State<IniciarSesion> {
   TextEditingController passwordController;
   String error = '';
 
-  final AuthService _auth = AuthService();
+  //final AuthService _auth = AuthService();
 
   @override
   void initState() {
@@ -116,7 +114,7 @@ class _IniciarSesionState extends State<IniciarSesion> {
   inicioSesion(BuildContext context, TextEditingController controladorNombre,
       TextEditingController controladorContrasena) async {
     AuthService authService = new AuthService();
-    dynamic resultado = await authService.signInWithEmailAndPassword(
+    dynamic resultado = await authService.inicioSesionUarioContrasena(
         controladorNombre.text, controladorContrasena.text);
     print('Funcion iniciar sesion');
     
@@ -147,7 +145,7 @@ class _IniciarSesionState extends State<IniciarSesion> {
       }
     }
   }
-
+/*
   inicioSesionAnonimo(BuildContext context) async {
     AuthService authService = new AuthService();
     dynamic resultado = await authService.inicioSesionAnonimo();
@@ -160,5 +158,5 @@ class _IniciarSesionState extends State<IniciarSesion> {
       Navigator.pushReplacement(
           context, MaterialPageRoute(builder: (_) => Principal()));
     }
-  }
+  */
 }

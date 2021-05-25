@@ -1,7 +1,4 @@
 import 'package:libro_de_cobros/entidades/cita.dart';
-
-import '../../main.dart';
-import 'package:libro_de_cobros/entidades/personal.dart';
 import 'package:flutter/material.dart';
 
 class PerfilCita extends StatelessWidget {

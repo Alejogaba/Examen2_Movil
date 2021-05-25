@@ -9,13 +9,14 @@ class AuthService {
     return (usuario != null) ? Usuario('Anonimo', '', uid: usuario.uid) : null;
   }
 
+//Retirna el id unico (UID) del usuario
   Future<String> getCurrentUid() async {
     return usuarioDeFirebase(await _auth.currentUser()).uid;
   }
 
+//Stream con mapeo de usuario
   Stream<Usuario> get usuario {
     return _auth.onAuthStateChanged
-        //.map((FirebaseUser user)=> usuarioDeFirebase(user));
         .map(usuarioDeFirebase);
   }
 
@@ -33,7 +34,7 @@ class AuthService {
   }
 
 //inicio de sesion con email y contraseña
-  Future signInWithEmailAndPassword(String email, String password) async {
+  Future inicioSesionUarioContrasena(String email, String password) async {
     try {
       AuthResult result = await _auth.signInWithEmailAndPassword(
           email: email, password: password);
@@ -46,11 +47,10 @@ class AuthService {
   }
 
 //Registrarse con usuario y contraseña
-  Future registerWithEmailAndPassword(String email, String password) async {
+  Future registroConUsuarioyContrasena(String email, String password) async {
     try {
       AuthResult result = await _auth.createUserWithEmailAndPassword(
           email: email, password: password);
-      //FirebaseUser user = result.user;
       return usuarioDeFirebase(result.user);
     } catch (error) {
       print(error.toString());
