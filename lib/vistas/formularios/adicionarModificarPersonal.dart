@@ -5,6 +5,7 @@ import 'package:libro_de_cobros/servicios/auth.dart';
 import 'package:libro_de_cobros/servicios/database.dart';
 import 'package:libro_de_cobros/servicios/imageStorage.dart';
 import 'package:libro_de_cobros/vistas/generalWidgets/customTextFormField.dart';
+import 'package:libro_de_cobros/vistas/generalWidgets/loading.dart';
 
 class AdicionarModificarPersonal extends StatefulWidget {
   final nombre;
@@ -58,7 +59,7 @@ class _AdicionarModificarPersonalState
   String trabajando;
   String urlImagen;
   File imageFile;
-  bool loading;
+  bool loading = true;
 
   bool estaActivo = false;
   bool estaTrabajando = false;
@@ -114,9 +115,11 @@ class _AdicionarModificarPersonalState
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    var scafold = Scaffold(
       appBar: AppBar(
-        title: uid==null ? Text("Adicionar personal Medico") : Text("Modificar personal medico"),
+        title: uid == null
+            ? Text("Adicionar personal Medico")
+            : Text("Modificar personal medico"),
       ),
       body: Form(
         key: _formKey,
@@ -209,11 +212,15 @@ class _AdicionarModificarPersonalState
                   },
                 ),
                 ElevatedButton.icon(
-                  label: uid==null?Text("Adicionar Personal"): Text('Modificar Personal'),
-                  icon: uid==null ? Icon(Icons.add):Icon(Icons.edit),
+                  label: uid == null
+                      ? Text("Adicionar Personal")
+                      : Text('Modificar Personal'),
+                  icon: uid == null ? Icon(Icons.add) : Icon(Icons.edit),
                   onPressed: () async {
                     if (_formKey.currentState.validate()) {
-                      if (uid == null) {
+                      loading= false;
+                      try {
+                        if (uid == null) {
                         dynamic result =
                             await _auth.registroConUsuarioyContrasena(
                                 controlEmail.text.trim(),
@@ -260,6 +267,12 @@ class _AdicionarModificarPersonalState
                             trabajando);
                         Navigator.pop(context);
                       }
+                        
+                      } catch (e) {
+                        print("Error al actualizar personal medico: " + e.message);
+                        loading = true;
+                      }
+                      
                     }
                   },
                 ),
@@ -269,6 +282,15 @@ class _AdicionarModificarPersonalState
         ),
       ),
     );
+
+   return MaterialApp(
+      title: 'Lista de clientes',
+      theme: ThemeData(
+        primarySwatch: Colors.green,
+        visualDensity: VisualDensity.adaptivePlatformDensity,
+      ),
+      home: loading ? scafold : Loading(),
+      );
   }
 
   void popupButtonSelected(String value) {

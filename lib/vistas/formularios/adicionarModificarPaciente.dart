@@ -5,6 +5,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:libro_de_cobros/servicios/database.dart';
 import 'package:libro_de_cobros/servicios/imageStorage.dart';
 import 'package:libro_de_cobros/vistas/generalWidgets/customTextFormField.dart';
+import 'package:libro_de_cobros/vistas/generalWidgets/loading.dart';
 
 class AdicionarModificarPaciente extends StatefulWidget {
   final nombre;
@@ -34,21 +35,23 @@ class AdicionarModificarPaciente extends StatefulWidget {
       this.modoEditar})
       : super(key: key);
   @override
-  _AdicionarModificarPacienteState createState() => _AdicionarModificarPacienteState(
-      this.nombre,
-      this.apellido,
-      this.fechaNacimiento,
-      this.urlImagen,
-      this.estado,
-      this.telefono,
-      this.ciudad,
-      this.barrio,
-      this.direccion,
-      this.idPaciente,
-      this.modoEditar);
+  _AdicionarModificarPacienteState createState() =>
+      _AdicionarModificarPacienteState(
+          this.nombre,
+          this.apellido,
+          this.fechaNacimiento,
+          this.urlImagen,
+          this.estado,
+          this.telefono,
+          this.ciudad,
+          this.barrio,
+          this.direccion,
+          this.idPaciente,
+          this.modoEditar);
 }
 
-class _AdicionarModificarPacienteState extends State<AdicionarModificarPaciente> {
+class _AdicionarModificarPacienteState
+    extends State<AdicionarModificarPaciente> {
   TextEditingController controlNombre = TextEditingController();
   TextEditingController controlApellido = TextEditingController();
   TextEditingController controlIdentificacion = TextEditingController();
@@ -64,6 +67,7 @@ class _AdicionarModificarPacienteState extends State<AdicionarModificarPaciente>
   String trabajando;
   String urlImagen;
   File imageFile;
+  bool loading = true;
 
   DateTime fechaSeleccionada;
   DateTime fechaNacimiento;
@@ -133,7 +137,7 @@ class _AdicionarModificarPacienteState extends State<AdicionarModificarPaciente>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    var scafold = Scaffold(
       appBar: AppBar(
         title: !modoEditar
             ? Text("Adicionar Paciente")
@@ -190,15 +194,13 @@ class _AdicionarModificarPacienteState extends State<AdicionarModificarPaciente>
                     readOnly: true,
                     style: TextStyle(fontSize: 20),
                     controller: controlFecha,
-                    onTap: (){
-                       _selectDate(context);
+                    onTap: () {
+                      _selectDate(context);
                     },
                     decoration: InputDecoration(
                         suffixIcon: IconButton(
                           icon: Icon(Icons.date_range),
-                          onPressed: () {
-                           
-                          },
+                          onPressed: () {},
                         ),
                         filled: true,
                         hintStyle: TextStyle(fontSize: 20),
@@ -235,7 +237,9 @@ class _AdicionarModificarPacienteState extends State<AdicionarModificarPaciente>
                   icon: !modoEditar ? Icon(Icons.add) : Icon(Icons.edit),
                   onPressed: () async {
                     if (_formKey.currentState.validate()) {
-                      if (imageFile != null) {
+                      loading = false;
+                      try {
+                        if (imageFile != null) {
                         await ImageStorage(
                                 file: imageFile,
                                 idPaciente: controlIdentificacion.text)
@@ -255,6 +259,12 @@ class _AdicionarModificarPacienteState extends State<AdicionarModificarPaciente>
                           controlBarrio.text,
                           controlTelefono.text);
                       Navigator.pop(context);
+                      } catch (e) {
+                        print("Error al guardar/modificar Paciente: " +
+                            e.message);
+                        loading = true;
+                      }
+                      
                     }
                   },
                 ),
@@ -264,6 +274,15 @@ class _AdicionarModificarPacienteState extends State<AdicionarModificarPaciente>
         ),
       ),
     );
+
+    return MaterialApp(
+      title: 'Lista de clientes',
+      theme: ThemeData(
+        primarySwatch: Colors.green,
+        visualDensity: VisualDensity.adaptivePlatformDensity,
+      ),
+      home: loading ? scafold : Loading(),
+      );
   }
 
   void popupButtonSelected(String value) {

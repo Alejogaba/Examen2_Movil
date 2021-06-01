@@ -7,6 +7,7 @@ import 'package:libro_de_cobros/servicios/database.dart';
 import 'package:libro_de_cobros/vistas/formularios/buscarPaciente.dart';
 import 'package:libro_de_cobros/vistas/formularios/buscarPersonal.dart';
 import 'package:libro_de_cobros/vistas/generalWidgets/customTextFormField.dart';
+import 'package:libro_de_cobros/vistas/generalWidgets/loading.dart';
 
 class AgendarCita extends StatefulWidget {
   @override
@@ -36,6 +37,7 @@ class _AgendarCitaState extends State<AgendarCita> {
   File imageFile;
   Personal personal;
   TimeOfDay hora = TimeOfDay.now();
+  bool loading = true;
 
   DateTime fechaSeleccionada;
   DateTime fechaNacimiento;
@@ -62,7 +64,7 @@ class _AgendarCitaState extends State<AgendarCita> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    var material = MaterialApp(
       title: 'Lista de clientes',
       theme: ThemeData(
         primarySwatch: Colors.green,
@@ -198,6 +200,7 @@ class _AgendarCitaState extends State<AgendarCita> {
                     child: Text("Asignar cita"),
                     onPressed: () async {
                       if (_formKey.currentState.validate()) {
+                        loading = false;
                         await DatabaseService().insertarDatosCita(
                             uidPersonal,
                             controlPersonal.text,
@@ -219,6 +222,8 @@ class _AgendarCitaState extends State<AgendarCita> {
         ),
       ),
     );
+
+    return loading ? material : Loading();
   }
 
   void popupButtonSelected(String value) {

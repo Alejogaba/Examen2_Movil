@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:libro_de_cobros/entidades/personal.dart';
+import 'package:libro_de_cobros/servicios/pdf_api.dart';
+import 'package:libro_de_cobros/vistas/generalWidgets/loading.dart';
 import 'package:libro_de_cobros/vistas/perfil/perfilPersonal.dart';
 import 'package:provider/provider.dart';
 
@@ -15,78 +17,94 @@ class ListaPersonal extends StatefulWidget {
 }
 
 class _ListaPersonalState extends State<ListaPersonal> {
+  bool loading = false;
   bool modoSeleccionar;
   BuildContext contextPadre;
   bool adiccionarPersonalInactivo = false;
   _ListaPersonalState(this.modoSeleccionar, this.contextPadre);
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
-    final _listaPersonal = Provider.of<List<Personal>>(context);
-    //print(usuario);
-    return ListView.builder(
-        itemCount: _listaPersonal.length,
-        itemBuilder: (context, index) {
-          return ListTile(
-            onTap: () async {
-              if (modoSeleccionar == false || modoSeleccionar == null) {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (_) => PerfilPersonal(
-                            perfil: _listaPersonal, index: index)));
-              } else {
-                if (_listaPersonal[index].estadoActivo == false) {
-                  await cajaAdvertencia(context,_listaPersonal[index].tipo);
-                  if(adiccionarPersonalInactivo){
+    var lista;
+    try {
+      final _listaPersonal = Provider.of<List<Personal>>(context);
+      PdfApi.generarTablaPersonal(_listaPersonal);
+      //print(usuario);
+      lista = ListView.builder(
+          itemCount: _listaPersonal.length,
+          itemBuilder: (context, index) {
+            return ListTile(
+              onTap: () async {
+                if (modoSeleccionar == false || modoSeleccionar == null) {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) => PerfilPersonal(
+                              perfil: _listaPersonal, index: index)));
+                } else {
+                  if (_listaPersonal[index].estadoActivo == false) {
+                    await cajaAdvertencia(context, _listaPersonal[index].tipo);
+                    if (adiccionarPersonalInactivo) {
+                      Navigator.pop(contextPadre, _listaPersonal[index]);
+                    }
+                  } else {
                     Navigator.pop(contextPadre, _listaPersonal[index]);
                   }
-                }else{
-                  Navigator.pop(contextPadre, _listaPersonal[index]);
                 }
-                
-              }
-            },
-            onLongPress: () {
-              setState(() {});
-            },
-            title: Row(
-              children: [
-                Text(_listaPersonal[index].nombre +
-                    ' ' +
-                    _listaPersonal[index].apellido),
+              },
+              onLongPress: () {
+                setState(() {});
+              },
+              title: Row(
+                children: [
+                  Text(_listaPersonal[index].nombre +
+                      ' ' +
+                      _listaPersonal[index].apellido),
+                  Spacer(),
+                  Text(
+                    _listaPersonal[index].estadoActivo ? 'Activo' : 'Inactivo',
+                    textAlign: TextAlign.right,
+                    style: TextStyle(
+                        color: _listaPersonal[index].estadoActivo
+                            ? Colors.green
+                            : Colors.red),
+                  )
+                ],
+              ),
+              subtitle: Row(children: [
+                Text(_listaPersonal[index].tipo),
                 Spacer(),
                 Text(
-                  _listaPersonal[index].estadoActivo ? 'Activo' : 'Inactivo',
+                  _listaPersonal[index].trabajando,
                   textAlign: TextAlign.right,
-                  style: TextStyle(
-                      color: _listaPersonal[index].estadoActivo
-                          ? Colors.green
-                          : Colors.red),
-                )
-              ],
-            ),
-            subtitle: Row(children: [
-              Text(_listaPersonal[index].tipo),
-              Spacer(),
-              Text(
-                _listaPersonal[index].trabajando,
-                textAlign: TextAlign.right,
+                ),
+              ]),
+              leading: CircleAvatar(
+                child: (_listaPersonal[index].urlImagen == null ||
+                        _listaPersonal[index].urlImagen.trim() == '')
+                    ? Text(_listaPersonal[index]
+                        .nombre
+                        .toUpperCase()
+                        .substring(0, 1))
+                    : null,
+                backgroundImage: (_listaPersonal[index].urlImagen != null)
+                    ? NetworkImage(_listaPersonal[index].urlImagen)
+                    : null,
               ),
-            ]),
-            leading: CircleAvatar(
-              child: (_listaPersonal[index].urlImagen == null ||
-                      _listaPersonal[index].urlImagen.trim() == '')
-                  ? Text(_listaPersonal[index]
-                      .nombre
-                      .toUpperCase()
-                      .substring(0, 1))
-                  : null,
-              backgroundImage: (_listaPersonal[index].urlImagen != null)
-                  ? NetworkImage(_listaPersonal[index].urlImagen)
-                  : null,
-            ),
-          );
-        });
+            );
+          });
+      loading = true;
+    } catch (e) {
+      print("Error lista Personal: " + e.message);
+      loading = false;
+    }
+
+    return loading ? lista : Loading();
   }
 
   String esActivo(bool estado) {
@@ -97,7 +115,7 @@ class _ListaPersonalState extends State<ListaPersonal> {
     }
   }
 
-  cajaAdvertencia(BuildContext context,String tipoPersonal) async {
+  cajaAdvertencia(BuildContext context, String tipoPersonal) async {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -111,8 +129,9 @@ class _ListaPersonalState extends State<ListaPersonal> {
             ),
             Text('  Advertencia ')
           ]),
-          content: Text(
-              "Este "+tipoPersonal+" esta inactivo, ¿seguro que desea seleccionarlo?"),
+          content: Text("Este " +
+              tipoPersonal +
+              " esta inactivo, ¿seguro que desea seleccionarlo?"),
           actions: <Widget>[
             ElevatedButton(
               child: Text("Si"),

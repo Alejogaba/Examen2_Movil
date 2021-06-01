@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:libro_de_cobros/entidades/paciente.dart';
+import 'package:libro_de_cobros/servicios/pdf_api.dart';
 import 'package:libro_de_cobros/vistas/generalWidgets/loading.dart';
 import 'package:libro_de_cobros/vistas/perfil/perfilPaciente.dart';
 import 'package:provider/provider.dart';
@@ -27,6 +28,7 @@ class _ListaPacientesState extends State<ListaPacientes> {
     var lista;
     try {
       final _listaPacientes = Provider.of<List<Paciente>>(context);
+      PdfApi.generarTablaPacientes(_listaPacientes);
       lista = ListView.builder(
           itemCount: _listaPacientes.length,
           itemBuilder: (context, index) {

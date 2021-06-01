@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:libro_de_cobros/entidades/cita.dart';
+import 'package:libro_de_cobros/servicios/pdf_api.dart';
 import 'package:libro_de_cobros/vistas/generalWidgets/loading.dart';
 import 'package:libro_de_cobros/vistas/perfil/perfilCita.dart';
 import 'package:provider/provider.dart';
@@ -20,6 +21,7 @@ class _ListaCitasState extends State<ListaCitas> {
     var lista;
     try {
       final _listaCitas = Provider.of<List<Cita>>(context);
+      PdfApi.generarTablaCita(_listaCitas);
       lista = ListView.builder(
           itemCount: _listaCitas.length,
           itemBuilder: (context, index) {

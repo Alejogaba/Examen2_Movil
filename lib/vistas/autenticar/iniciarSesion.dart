@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:libro_de_cobros/servicios/auth.dart';
+import 'package:libro_de_cobros/vistas/generalWidgets/loading.dart';
 import 'package:libro_de_cobros/vistas/inicio/principal.dart';
 import '../generalWidgets/customTextField.dart';
 
@@ -12,7 +13,7 @@ class IniciarSesion extends StatefulWidget {
 
 class _IniciarSesionState extends State<IniciarSesion> {
   List<String> credenciales = [];
-
+  bool loading = true;
   TextEditingController usernameController;
   TextEditingController passwordController;
   String error = '';
@@ -28,13 +29,13 @@ class _IniciarSesionState extends State<IniciarSesion> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    var scafold = Scaffold(
       backgroundColor: Colors.green[100],
       appBar: AppBar(
         backgroundColor: Colors.green[600],
         elevation: 0.0,
         title: Text('Inicio de sesión'),
-       /* actions: <Widget>[
+        /* actions: <Widget>[
           TextButton.icon(
             style: TextButton.styleFrom(primary: Colors.black),
             icon: Icon(Icons.person),
@@ -76,7 +77,8 @@ class _IniciarSesionState extends State<IniciarSesion> {
                               borderRadius: BorderRadius.circular(18),
                               side: BorderSide(color: Colors.lightGreen)))),
                   onPressed: () {
-                    inicioSesion(context, usernameController, passwordController);
+                    inicioSesion(
+                        context, usernameController, passwordController);
                   },
                   child: Text(
                     "Iniciar sesión",
@@ -86,8 +88,9 @@ class _IniciarSesionState extends State<IniciarSesion> {
             Padding(
               padding: EdgeInsets.only(top: 15.0),
               child: FittedBox(
-                fit: BoxFit.contain,
-                child: null/*TextButton(
+                  fit: BoxFit.contain,
+                  child:
+                      null /*TextButton(
                   child: (Text("Iniciar sesión como usuario anonimo",
                       style: TextStyle(
                           decoration: TextDecoration.underline,
@@ -98,7 +101,7 @@ class _IniciarSesionState extends State<IniciarSesion> {
                     inicioSesionAnonimo(context);
                   },
                 ),*/
-              ),
+                  ),
             ),
             SizedBox(height: 12.0),
             Text(
@@ -109,33 +112,38 @@ class _IniciarSesionState extends State<IniciarSesion> {
         ),
       ),
     );
+    return loading ? scafold : Loading();
   }
 
   inicioSesion(BuildContext context, TextEditingController controladorNombre,
       TextEditingController controladorContrasena) async {
+    loading = false;
     AuthService authService = new AuthService();
     dynamic resultado = await authService.inicioSesionUarioContrasena(
         controladorNombre.text, controladorContrasena.text);
     print('Funcion iniciar sesion');
-    
+
     if (controladorNombre.text.isEmpty || controladorNombre.text.isEmpty) {
       print("No deje campos vacios");
       setState(() {
+        loading = true;
         error = "No deje campos vacios";
       });
     } else {
       if (controladorNombre.text.contains(' ') ||
           controladorContrasena.text.contains(' ')) {
         print("No ingrese espacios en blanco");
-       setState(() {
-         error = "No ingrese espacios en blanco";
-       });  
+        setState(() {
+          loading = true;
+          error = "No ingrese espacios en blanco";
+        });
       } else {
         if (resultado == null) {
           print("No se pudo iniciar sesión");
           setState(() {
-         error = "No se pudo iniciar sesión";
-       });
+            loading = true;
+            error = "No se pudo iniciar sesión";
+          });
         } else {
           print(authService.usuarioDeFirebase(resultado).uid);
 

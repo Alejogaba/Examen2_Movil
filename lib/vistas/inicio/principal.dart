@@ -1,6 +1,9 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:libro_de_cobros/entidades/personal.dart';
 import 'package:libro_de_cobros/servicios/auth.dart';
+import 'package:libro_de_cobros/servicios/pdf_api.dart';
 import 'package:libro_de_cobros/servicios/database.dart';
 import 'package:libro_de_cobros/vistas/autenticar/iniciarSesion.dart';
 import 'package:libro_de_cobros/vistas/formularios/agendarCita.dart';
@@ -26,9 +29,12 @@ class _PrincipalState extends State<Principal>
   dynamic providerValue = DatabaseService().usuariosPersonal;
   String titulo = 'Lista personal de la salud';
   int tabIndex = 0;
+  dynamic abrirPdf = 0;
   final List<Tab> myTabs = <Tab>[
     new Tab(
-      child: ListaPersonal(modoSeleccionar: false,),
+      child: ListaPersonal(
+        modoSeleccionar: false,
+      ),
     ),
     new Tab(child: VentanaListaPacientes()),
     new Tab(child: Icon(Icons.view_agenda)),
@@ -63,6 +69,26 @@ class _PrincipalState extends State<Principal>
           title: Text(titulo),
           actions: [
             IconButton(
+              icon: Icon(Icons.book),
+              onPressed: () async {
+                switch (tabIndex) {
+                  case 0:
+                    await PdfApi.openFilePersonal('personal.pdf');
+                    break;
+                  case 1:
+                    await PdfApi.openFilePersonal('pacientes.pdf');
+                  break;
+                  case 2:
+                    await PdfApi.openFilePersonal('citas.pdf');
+                  break;
+                  default:
+                  await PdfApi.openFilePersonal('personal.pdf');
+                }
+                
+                print('abrir pdf');
+              },
+            ),
+            IconButton(
               icon: Icon(Icons.logout),
               onPressed: () async {
                 Navigator.pushReplacement(context,
@@ -78,7 +104,7 @@ class _PrincipalState extends State<Principal>
                 print(index);
                 switch (index) {
                   case 0:
-                    titulo = 'Lista de personal';
+                    titulo = 'Lista de personal de la salud';
                     break;
                   case 1:
                     titulo = 'Lista de pacientes';
@@ -105,26 +131,45 @@ class _PrincipalState extends State<Principal>
           VentanaListaPacientes(),
           VentanaListaCitas(),
         ]),
-        
         floatingActionButton: FloatingActionButton(
           onPressed: () async {
-            setState(() {
+            setState(() async {
               switch (tabIndex) {
                 case 0:
-                  Navigator.push(context,
-                      MaterialPageRoute(builder: (_) => AdicionarModificarPersonal()));
+                  await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) => AdicionarModificarPersonal()));
+                  setState(() {
+                    abrirPdf = 0;
+                  });
                   break;
                 case 1:
-                  Navigator.push(context,
-                      MaterialPageRoute(builder: (_) => AdicionarModificarPaciente(modoEditar: false,)));
+                  await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) => AdicionarModificarPaciente(
+                                modoEditar: false,
+                              )));
+                  setState(() {
+                    abrirPdf = 1;
+                  });
                   break;
                 case 2:
-                  Navigator.push(context,
+                  await Navigator.push(context,
                       MaterialPageRoute(builder: (_) => AgendarCita()));
+                  setState(() {
+                    abrirPdf = 2;
+                  });
                   break;
                 default:
-                  Navigator.push(context,
-                      MaterialPageRoute(builder: (_) => AdicionarModificarPersonal()));
+                  await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) => AdicionarModificarPersonal()));
+                  setState(() {
+                    abrirPdf = 0;
+                  });
                   break;
               }
             });
@@ -160,7 +205,6 @@ class _PrincipalState extends State<Principal>
     }
     return age;
   }
-
 
   getUid() async {
     uid = await authService.getCurrentUid();
