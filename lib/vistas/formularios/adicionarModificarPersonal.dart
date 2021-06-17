@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:libro_de_cobros/servicios/auth.dart';
 import 'package:libro_de_cobros/servicios/database.dart';
@@ -59,13 +60,14 @@ class _AdicionarModificarPersonalState
   String trabajando;
   String urlImagen;
   File imageFile;
+  bool obscureTextPassword = true;
   bool loading = true;
+  bool textFormVisible = true;
 
   bool estaActivo = false;
   bool estaTrabajando = false;
   final AuthService _auth = AuthService();
   final _formKey = GlobalKey<FormState>();
-
   String nombre;
   String apellido;
   String tipoEdit;
@@ -88,6 +90,9 @@ class _AdicionarModificarPersonalState
 
   @override
   void initState() {
+    if (uid != null) {
+      textFormVisible = false;
+    }
     if (nombre != null) {
       controlNombre.text = nombre;
     }
@@ -96,6 +101,8 @@ class _AdicionarModificarPersonalState
     }
     if (tipoEdit != null) {
       controlTipo.text = tipoEdit;
+    } else {
+      controlTipo.text = "Medico";
     }
     if (email != null) {
       controlEmail.text = email;
@@ -163,15 +170,64 @@ class _AdicionarModificarPersonalState
                     customController: controlNombre, labelText: "Nombre"),
                 CustomTextFormField(
                     customController: controlApellido, labelText: "Apellido"),
-                CustomTextFormField(
-                    customController: controlTipo,
-                    labelText: "Tipo (Medico,Enfermero,Fisioterapeuta"),
-                CustomTextFormField(
-                    customController: controlEmail,
-                    labelText: "Correo electronico"),
-                CustomTextFormField(
-                    customController: controlContrasena,
-                    labelText: "Contraseña"),
+                Padding(
+                  padding: EdgeInsets.all(25.0),
+                  child: DropdownButton(
+                      value: controlTipo.text,
+                      items: [
+                        DropdownMenuItem(
+                          child: Text("Medico"),
+                          value: "Medico",
+                        ),
+                        DropdownMenuItem(
+                          child: Text("Enfermero"),
+                          value: "Enfermero",
+                        ),
+                        DropdownMenuItem(
+                          child: Text("Fisioterapeuta"),
+                          value: "Fisioterapeuta",
+                        ),
+                       
+                      ],
+                      onChanged: (value) {
+                        setState(() {
+                          controlTipo.text = value;
+                        });
+                      }),
+                ),
+                textFormVisible
+                    ? CustomTextFormField(
+                        customController: controlEmail,
+                        labelText: "Correo electronico")
+                    : Padding(
+                        padding: EdgeInsets.all(0),
+                      ),
+                textFormVisible
+                    ? Padding(
+                        padding: EdgeInsets.all(25.0),
+                        child: TextFormField(
+                          style: TextStyle(fontSize: 20),
+                          validator: (val) =>
+                              val.isEmpty ? 'No deje campos vacios' : null,
+                          obscureText: obscureTextPassword,
+                          controller: controlContrasena,
+                          decoration: InputDecoration(
+                              labelText: "Contraseña",
+                              suffixIcon: IconButton(
+                                icon: Icon(Icons.visibility),
+                                onPressed: () {
+                                  setState(() {
+                                    obscureTextPassword
+                                        ? obscureTextPassword = false
+                                        : obscureTextPassword = true;
+                                  });
+                                },
+                              )),
+                        ),
+                      )
+                    : Padding(
+                        padding: EdgeInsets.all(0),
+                      ),
                 /*Container(
                   padding: EdgeInsets.all(20.0),
                   child: DropdownButton(
@@ -218,61 +274,65 @@ class _AdicionarModificarPersonalState
                   icon: uid == null ? Icon(Icons.add) : Icon(Icons.edit),
                   onPressed: () async {
                     if (_formKey.currentState.validate()) {
-                      loading= false;
+                      loading = false;
                       try {
                         if (uid == null) {
-                        dynamic result =
-                            await _auth.registroConUsuarioyContrasena(
-                                controlEmail.text.trim(),
-                                controlContrasena.text.trim());
-                        if (result == null) {
-                          setState(() {
-                            print('Please supply a valid email');
-                          });
+                          dynamic result =
+                              await _auth.registroConUsuarioyContrasena(
+                                  controlEmail.text.trim(),
+                                  controlContrasena.text.trim());
+                          if (result.toString().contains("Error")) {
+                            await cajaAdvertencia(context, result.toString());
+                            print("mostrar toast");
+                          } else {
+                            if (imageFile != null) {
+                              await ImageStorage(
+                                      file: imageFile,
+                                      uid: result.uid.toString())
+                                  .subirImagenPersonal();
+                            }
+                            await DatabaseService(uid: result.uid.toString())
+                                .insertarDatosPersonal(
+                                    controlEmail.text,
+                                    controlContrasena.text,
+                                    controlNombre.text,
+                                    controlApellido.text,
+                                    "https://firebasestorage.googleapis.com/v0/b/libro-de-cobros-flutter.appspot.com/o/Personal%2F" +
+                                        result.uid.toString() +
+                                        ".jpg?alt=media&token=25e31b9e-51ce-4027-a163-cb4418e81e41",
+                                    controlTipo.text,
+                                    estaActivo,
+                                    trabajando);
+                            Navigator.pop(context);
+                          }
                         } else {
                           if (imageFile != null) {
-                            await ImageStorage(
-                                    file: imageFile, uid: result.uid.toString())
+                            await ImageStorage(file: imageFile, uid: uid)
                                 .subirImagenPersonal();
                           }
-                          await DatabaseService(uid: result.uid.toString())
-                              .insertarDatosPersonal(
-                                  controlEmail.text,
-                                  controlContrasena.text,
-                                  controlNombre.text,
-                                  controlApellido.text,
-                                  "https://firebasestorage.googleapis.com/v0/b/libro-de-cobros-flutter.appspot.com/o/Personal%2F" +
-                                      result.uid.toString() +
-                                      ".jpg?alt=media&token=25e31b9e-51ce-4027-a163-cb4418e81e41",
-                                  controlTipo.text,
-                                  estaActivo,
-                                  trabajando);
+                          await DatabaseService(uid: uid).insertarDatosPersonal(
+                              controlEmail.text,
+                              controlContrasena.text,
+                              controlNombre.text,
+                              controlApellido.text,
+                              "https://firebasestorage.googleapis.com/v0/b/libro-de-cobros-flutter.appspot.com/o/Personal%2F" +
+                                  uid +
+                                  ".jpg?alt=media&token=25e31b9e-51ce-4027-a163-cb4418e81e41",
+                              controlTipo.text,
+                              estaActivo,
+                              trabajando);
                           Navigator.pop(context);
                         }
-                      } else {
-                        if (imageFile != null) {
-                          await ImageStorage(file: imageFile, uid: uid)
-                              .subirImagenPersonal();
-                        }
-                        await DatabaseService(uid: uid).insertarDatosPersonal(
-                            controlEmail.text,
-                            controlContrasena.text,
-                            controlNombre.text,
-                            controlApellido.text,
-                            "https://firebasestorage.googleapis.com/v0/b/libro-de-cobros-flutter.appspot.com/o/Personal%2F" +
-                                uid +
-                                ".jpg?alt=media&token=25e31b9e-51ce-4027-a163-cb4418e81e41",
-                            controlTipo.text,
-                            estaActivo,
-                            trabajando);
-                        Navigator.pop(context);
-                      }
-                        
                       } catch (e) {
-                        print("Error al actualizar personal medico: " + e.message);
+                        print("Error al actualizar personal medico: " +
+                            e.message);
+                        cajaAdvertencia(
+                            context,
+                            "Error al actualizar personal medico: " +
+                                e.message);
+
                         loading = true;
                       }
-                      
                     }
                   },
                 ),
@@ -283,14 +343,14 @@ class _AdicionarModificarPersonalState
       ),
     );
 
-   return MaterialApp(
+    return MaterialApp(
       title: 'Lista de clientes',
       theme: ThemeData(
         primarySwatch: Colors.green,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: loading ? scafold : Loading(),
-      );
+      home: scafold,
+    );
   }
 
   void popupButtonSelected(String value) {
@@ -367,5 +427,34 @@ class _AdicionarModificarPersonalState
     } else {
       return Image.file(imageFile, width: 400, height: 400);
     }
+  }
+
+  cajaAdvertencia(BuildContext context, String msg) async {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Row(children: [
+            Image.network(
+              'https://www.lineex.es/wp-content/uploads/2018/06/alert-icon-red-11-1.png',
+              width: 50,
+              height: 50,
+              fit: BoxFit.contain,
+            ),
+            Text('  Advertencia ')
+          ]),
+          content: Text(msg),
+          actions: <Widget>[
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(primary: Colors.grey),
+              child: Text("Ok"),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 }

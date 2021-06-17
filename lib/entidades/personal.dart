@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class Personal {
   final String uid;
   final String email;
@@ -19,4 +21,18 @@ class Personal {
       this.tipo,
       this.estadoActivo,
       this.trabajando});
+
+static Personal fromSnapshot(DocumentSnapshot snapshot) {
+    return Personal(
+         uid: snapshot.data['uid'] ?? '',
+          email: snapshot.data['email'] ?? '',
+          contrasena: snapshot.data['contrasena'] ?? '',
+          nombre: snapshot.data['nombre'] ?? '',
+          apellido: snapshot.data['apellido'] ?? '',
+          urlImagen: snapshot.data['urlImagen'] ?? '',
+          estadoActivo: snapshot.data['estadoActivo'] ?? false,
+          tipo: snapshot.data['tipo'] ?? '',
+          trabajando: snapshot.data['trabajando'] ?? '');
+  }
 }
+

@@ -72,10 +72,11 @@ class DatabaseService {
     String hora,
     String estado,
     String urlImagen,
+    {String idCita}
   ) async {
     final CollectionReference collection =
         Firestore.instance.collection('Citas');
-    String id = collection.document().documentID.toString();
+    String id = collection.document(idCita).documentID.toString();
     return await collection.document(id).setData({
       'uidPersonalMedico': uidPersonalMedico,
       'nombrePersonalMedico': nombrePersonalMedico,
@@ -154,7 +155,8 @@ class DatabaseService {
   }
 
   //Eliminar paciente en firestore
-  Future<void> eliminarPaciente(List<Cita> citasPendientes,String idPaciente) async {
+  Future<void> eliminarPaciente(
+      List<Cita> citasPendientes, String idPaciente) async {
     final CollectionReference collection =
         Firestore.instance.collection('Pacientes');
     if (citasPendientes.length > 0) {
@@ -178,7 +180,8 @@ class DatabaseService {
     QuerySnapshot _myDoc = await Firestore.instance
         .collection('Citas')
         .where('uidPersonalMedico', isEqualTo: uidPersonalMedico)
-        .where('estado', isEqualTo:'Asignado').getDocuments();
+        .where('estado', isEqualTo: 'Asignado')
+        .getDocuments();
     List<DocumentSnapshot> _myDocCount = _myDoc.documents;
     return _myDocCount.map((doc) {
       return Cita(
@@ -195,11 +198,12 @@ class DatabaseService {
     }).toList(); // Count of Documents in Collection
   }
 
-//Buscar las citas pendientes de los pacientes 
+//Buscar las citas pendientes de los pacientes
   citasPendientesPaciente(String idPaciente) async {
     QuerySnapshot _myDoc = await Firestore.instance
         .collection('Citas')
-        .where('idPaciente', isEqualTo: idPaciente).getDocuments();
+        .where('idPaciente', isEqualTo: idPaciente)
+        .getDocuments();
     List<DocumentSnapshot> _myDocCount = _myDoc.documents;
     return _myDocCount.map((doc) {
       return Cita(
@@ -236,6 +240,28 @@ class DatabaseService {
   Stream<List<Cita>> get citas {
     final CollectionReference collection =
         Firestore.instance.collection('Citas');
-    return collection.snapshots().map(_citasListFromSnapshot);
+    return collection.orderBy('fechaHora').snapshots().map(_citasListFromSnapshot);
   }
+
+  Stream<List<Cita>> get citasPersonal {
+    final CollectionReference collection =
+        Firestore.instance.collection('Citas');
+    return collection
+        .where('uidPersonalMedico', isEqualTo: uid)
+        .snapshots()
+        .map(_citasListFromSnapshot);
+  }
+
+  Future<Paciente> getPaciente(String id) async {
+    final CollectionReference collection =
+        Firestore.instance.collection('Pacientes');
+    return Paciente.fromSnapshot(await collection.document(id).get());
+  }
+
+  Future<Personal> getPersonal(String id) async {
+    final CollectionReference collection =
+        Firestore.instance.collection('Personal');
+    return Personal.fromSnapshot(await collection.document(id).get());
+  }
+ 
 }

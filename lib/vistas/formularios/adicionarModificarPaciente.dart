@@ -240,31 +240,34 @@ class _AdicionarModificarPacienteState
                       loading = false;
                       try {
                         if (imageFile != null) {
-                        await ImageStorage(
-                                file: imageFile,
-                                idPaciente: controlIdentificacion.text)
-                            .subirImagenPaciente();
-                      }
-                      await DatabaseService().insertarDatosPaciente(
-                          controlIdentificacion.text,
-                          controlNombre.text,
-                          controlApellido.text,
-                          "https://firebasestorage.googleapis.com/v0/b/libro-de-cobros-flutter.appspot.com/o/Pacientes%2F" +
-                              controlIdentificacion.text +
-                              ".jpg?alt=media&token=25e31b9e-51ce-4027-a163-cb4418e81e41",
-                          fechaSeleccionada,
-                          calcularEdad(fechaSeleccionada),
-                          estaActivo,
-                          controlDireccion.text,
-                          controlBarrio.text,
-                          controlTelefono.text);
-                      Navigator.pop(context);
+                          await ImageStorage(
+                                  file: imageFile,
+                                  idPaciente: controlIdentificacion.text)
+                              .subirImagenPaciente();
+                        }
+                        await DatabaseService().insertarDatosPaciente(
+                            controlIdentificacion.text,
+                            controlNombre.text,
+                            controlApellido.text,
+                            "https://firebasestorage.googleapis.com/v0/b/libro-de-cobros-flutter.appspot.com/o/Pacientes%2F" +
+                                controlIdentificacion.text +
+                                ".jpg?alt=media&token=25e31b9e-51ce-4027-a163-cb4418e81e41",
+                            fechaSeleccionada,
+                            calcularEdad(fechaSeleccionada),
+                            estaActivo,
+                            controlDireccion.text,
+                            controlBarrio.text,
+                            controlTelefono.text);
+                        Navigator.pop(context);
                       } catch (e) {
                         print("Error al guardar/modificar Paciente: " +
                             e.message);
+                        cajaAdvertencia(
+                            context,
+                            "Error al guardar/modificar Paciente: " +
+                                e.message);
                         loading = true;
                       }
-                      
                     }
                   },
                 ),
@@ -281,8 +284,8 @@ class _AdicionarModificarPacienteState
         primarySwatch: Colors.green,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: loading ? scafold : Loading(),
-      );
+      home: scafold,
+    );
   }
 
   void popupButtonSelected(String value) {
@@ -389,5 +392,34 @@ class _AdicionarModificarPacienteState
       }
     }
     return age;
+  }
+
+  cajaAdvertencia(BuildContext context, String msg) async {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Row(children: [
+            Image.network(
+              'https://www.lineex.es/wp-content/uploads/2018/06/alert-icon-red-11-1.png',
+              width: 50,
+              height: 50,
+              fit: BoxFit.contain,
+            ),
+            Text('  Advertencia ')
+          ]),
+          content: Text(msg),
+          actions: <Widget>[
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(primary: Colors.grey),
+              child: Text("Ok"),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 }

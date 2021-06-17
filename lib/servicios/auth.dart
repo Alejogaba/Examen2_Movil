@@ -1,5 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 import 'package:libro_de_cobros/entidades/usuario.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -41,8 +43,10 @@ class AuthService {
       FirebaseUser user = result.user;
       return user;
     } catch (error) {
+     
       print(error.toString());
-      return null;
+      return 'Error: No se puede iniciar sesión: ' +
+          error.message;
     }
   }
 
@@ -53,8 +57,7 @@ class AuthService {
           email: email, password: password);
       return usuarioDeFirebase(result.user);
     } catch (error) {
-      print(error.toString());
-      return null;
+      return "Error al crear el usuario: " + error.message;
     }
   }
 
@@ -68,4 +71,6 @@ class AuthService {
       return null;
     }
   }
+
+  
 }

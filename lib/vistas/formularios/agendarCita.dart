@@ -32,6 +32,7 @@ class _AgendarCitaState extends State<AgendarCita> {
   String uidPersonal;
   String idPaciente;
   String urlImagenPaciente;
+  String estadosCita="No atendido";
   int horaReloj = 0;
   int minutoReloj = 0;
   File imageFile;
@@ -192,10 +193,35 @@ class _AgendarCitaState extends State<AgendarCita> {
                           )),
                     ),
                   ),
-                  CustomTextFormField(
-                      customController: controlEstado,
-                      labelText:
-                          "Estado de la cita (Atendido, En servicio, No atendido, Asignado, Anulado)"),
+                  
+                  Padding(
+                    padding: EdgeInsets.all(25.0),
+                    child: DropdownButton(
+                      value: estadosCita,
+                      items: [
+                        DropdownMenuItem(
+                          child: Text("Estado de la cita: No atendido"),
+                          value: "No atendido",
+                        ),
+                        DropdownMenuItem(
+                          child: Text("Estado de la cita: Atendido"),
+                          value: "Atendido",
+                        ),
+                        DropdownMenuItem(
+                          child: Text("Estado de la cita: En servicio"),
+                          value: "En servicio",
+                        ),
+                        DropdownMenuItem(
+                            child: Text("Estado de la cita: Asignado"), value: "Asignado"),
+                        DropdownMenuItem(
+                            child: Text("Estado de la cita: Anulado"), value: "Anulado")
+                      ],
+                      onChanged: (value) {
+                        setState(() {
+                          estadosCita= value;
+                        });
+                      }),
+                      ),
                   ElevatedButton(
                     child: Text("Asignar cita"),
                     onPressed: () async {
@@ -209,7 +235,7 @@ class _AgendarCitaState extends State<AgendarCita> {
                             fechaSeleccionada.add(Duration(
                                 hours: horaReloj, minutes: minutoReloj)),
                             controlTiempo.text,
-                            controlEstado.text,
+                            estadosCita,
                             urlImagenPaciente);
                         Navigator.pop(context);
                       }
@@ -278,6 +304,4 @@ class _AgendarCitaState extends State<AgendarCita> {
         (p1.period.toString() == "DayPeriod.am" ? 'AM' : 'PM');
     print('hora: ' + hora.toString());
   }
-
- 
 }

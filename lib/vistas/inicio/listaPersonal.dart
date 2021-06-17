@@ -77,6 +77,8 @@ class _ListaPersonalState extends State<ListaPersonal> {
                 ],
               ),
               subtitle: Row(children: [
+                Image.asset(iconoTipoPersonal(_listaPersonal[index].tipo)),
+                SizedBox(width: 8),
                 Text(_listaPersonal[index].tipo),
                 Spacer(),
                 Text(
@@ -151,5 +153,17 @@ class _ListaPersonalState extends State<ListaPersonal> {
         );
       },
     );
+  }
+
+  String iconoTipoPersonal(String tipo) {
+    if (tipo == "Fisioterapeuta") {
+      return "images/fisioterapia.png";
+    }else{
+      if(tipo=="Medico"){
+         return "images/medico.png";
+      }else{
+         return "images/enfermera.png";
+      }
+    }
   }
 }

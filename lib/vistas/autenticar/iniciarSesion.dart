@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:libro_de_cobros/servicios/auth.dart';
+import 'package:libro_de_cobros/servicios/database.dart';
 import 'package:libro_de_cobros/vistas/generalWidgets/loading.dart';
 import 'package:libro_de_cobros/vistas/inicio/principal.dart';
+import 'package:libro_de_cobros/vistas/inicio/ventanaListaCitasdePersonal.dart';
 import '../generalWidgets/customTextField.dart';
 
 class IniciarSesion extends StatefulWidget {
@@ -52,6 +54,10 @@ class _IniciarSesionState extends State<IniciarSesion> {
           crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
+            Image.asset('images/flutter.png'),
+            Padding(
+              padding: EdgeInsets.only(top: 20.0),
+            ),
             CustomTextField(
               customController: usernameController,
               labelText: "Nombre de usuario",
@@ -138,17 +144,26 @@ class _IniciarSesionState extends State<IniciarSesion> {
           error = "No ingrese espacios en blanco";
         });
       } else {
-        if (resultado == null) {
+        if (resultado.toString().contains("Error")) {
           print("No se pudo iniciar sesión");
           setState(() {
+            cajaAdvertencia(context, resultado.toString());
             loading = true;
             error = "No se pudo iniciar sesión";
           });
         } else {
           print(authService.usuarioDeFirebase(resultado).uid);
-
-          Navigator.pushReplacement(
-              context, MaterialPageRoute(builder: (_) => Principal()));
+          if (authService.usuarioDeFirebase(resultado).uid ==
+              "YO7JpX5Mk8dLJ73F7suCiBAj4i33") {
+            Navigator.pushReplacement(
+                context, MaterialPageRoute(builder: (_) => Principal()));
+          } else {
+            print("No es administrador");
+            Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                    builder: (_) => VentanaListaCitasdePersonal()));
+          }
         }
       }
     }
@@ -167,4 +182,33 @@ class _IniciarSesionState extends State<IniciarSesion> {
           context, MaterialPageRoute(builder: (_) => Principal()));
     }
   */
+
+  cajaAdvertencia(BuildContext context, String msg) async {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Row(children: [
+            Image.network(
+              'https://www.lineex.es/wp-content/uploads/2018/06/alert-icon-red-11-1.png',
+              width: 50,
+              height: 50,
+              fit: BoxFit.contain,
+            ),
+            Text('  Advertencia ')
+          ]),
+          content: Text(msg),
+          actions: <Widget>[
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(primary: Colors.grey),
+              child: Text("Ok"),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
 }

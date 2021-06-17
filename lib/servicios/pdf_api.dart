@@ -1,6 +1,4 @@
 import 'dart:io';
-
-import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:libro_de_cobros/entidades/cita.dart';
 import 'package:libro_de_cobros/entidades/paciente.dart';
@@ -56,7 +54,7 @@ class PdfApi {
      pdf.addPage(MultiPage(
       build: (context) => [
         SizedBox(height: 0.1 * PdfPageFormat.cm),
-        buildTitle("Reporte citas",24,FontWeight.bold),
+        buildTitle("Reporte de citas",24,FontWeight.bold),
         buildTitle("Fecha y hora de ultima actualización: "+ 
         DateFormat.yMd().add_jm().format(DateTime.now()),15.5,FontWeight.normal),
         buildTableCitas(listaCitas),
@@ -136,10 +134,10 @@ class PdfApi {
 
   
     static Widget buildTableCitas(List<Cita> listaCitas) {
-     final headers = ['Fecha', 'Hora', 'Estado'];
+     final headers = ['Fecha','Paciente','Encargado','Hora', 'Estado'];
 
     
-    final data = listaCitas.map((cita) => [cita.fechaHora,cita.hora, cita.estado]).toList();
+    final data = listaCitas.map((cita) => [cita.fechaHora.split(' ')[0],cita.nombrePaciente,cita.nombrePersonalMedico,cita.hora, cita.estado]).toList();
 
 
     return Table.fromTextArray(
@@ -151,8 +149,10 @@ class PdfApi {
       cellHeight: 30,
       cellAlignments: {
         0: Alignment.centerLeft,
-        1: Alignment.centerRight,
-        2: Alignment.centerRight,
+        1: Alignment.center,
+        2: Alignment.center,
+        3: Alignment.center,
+        4: Alignment.centerRight,
       },
     );
   }

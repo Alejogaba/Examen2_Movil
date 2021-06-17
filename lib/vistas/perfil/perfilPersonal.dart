@@ -3,42 +3,51 @@ import 'package:libro_de_cobros/servicios/database.dart';
 import 'package:libro_de_cobros/vistas/formularios/adicionarModificarPersonal.dart';
 import 'package:libro_de_cobros/entidades/personal.dart';
 import 'package:flutter/material.dart';
+import 'package:libro_de_cobros/vistas/inicio/principal.dart';
 
+// ignore: must_be_immutable
 class PerfilPersonal extends StatelessWidget {
   final index;
+  final bool modoSoloLectura;
   final List<Personal> perfil;
   List<Cita> citasPendientes = [];
-  PerfilPersonal({Key key, this.perfil, this.index});
+  PerfilPersonal({Key key, this.perfil, this.index, this.modoSoloLectura});
 
   @override
   Widget build(BuildContext context) {
+    var iconoModificar = IconButton(
+        icon: Icon(Icons.edit),
+        onPressed: () async {
+          await Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (_) => AdicionarModificarPersonal(
+                        nombre: perfil[index].nombre,
+                        apellido: perfil[index].apellido,
+                        estado: perfil[index].estadoActivo,
+                        email: perfil[index].email,
+                        contrasena: perfil[index].contrasena,
+                        urlImagen: perfil[index].urlImagen,
+                        trabajando: perfil[index].trabajando,
+                        tipo: perfil[index].tipo,
+                        uid: perfil[index].uid,
+                      ))).whenComplete(() => Navigator.pop(context));
+        });
+    var iconoEliminar = IconButton(
+        icon: Icon(Icons.delete),
+        onPressed: () async {
+          citasPendientes = await DatabaseService()
+              .citasPendientesPersonal(perfil[index].uid);
+          await confirmarEliminar(context, perfil[index].uid, citasPendientes);
+        });
     return Scaffold(
-      appBar: AppBar(title: Text('Perfil Mensajero'), actions: [
-        IconButton(
-            icon: Icon(Icons.edit),
-            onPressed: () {
-              Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (_) => AdicionarModificarPersonal(
-                            nombre: perfil[index].nombre,
-                            apellido: perfil[index].apellido,
-                            estado: perfil[index].estadoActivo,
-                            email: perfil[index].email,
-                            contrasena: perfil[index].contrasena,
-                            urlImagen: perfil[index].urlImagen,
-                            trabajando: perfil[index].trabajando,
-                            tipo: perfil[index].tipo,
-                            uid: perfil[index].uid,
-                          )));
-            }),
-        IconButton(
-            icon: Icon(Icons.delete),
-            onPressed: () async {
-              citasPendientes = await DatabaseService()
-                  .citasPendientesPersonal(perfil[index].uid);
-              confirmarEliminar(context, perfil[index].uid, citasPendientes);
-            })
+      appBar: AppBar(title: Text('Perfil personal medico'), actions: [
+        (modoSoloLectura == false || modoSoloLectura == null)
+            ? iconoModificar
+            : SizedBox(),
+        (modoSoloLectura == false || modoSoloLectura == null)
+            ? iconoEliminar
+            : SizedBox()
       ]),
       body: ListView(children: [
         Container(
@@ -75,13 +84,15 @@ class PerfilPersonal extends StatelessWidget {
                               perfil[index].nombre +
                                   ' ' +
                                   perfil[index].apellido,
-                              style: TextStyle(fontSize: 20),
+                              style: TextStyle(
+                                  fontSize: 20, fontWeight: FontWeight.bold),
                             ),
                             Text(perfil[index].tipo),
                             SizedBox(
                               height: 20,
                             ),
-                            Text('Estado actual'),
+                            Text('Estado actual',
+                                style: TextStyle(fontSize: 18)),
                             SizedBox(
                               height: 20,
                             ),
@@ -107,14 +118,15 @@ class PerfilPersonal extends StatelessWidget {
                                   children: [
                                     Text('Libre'),
                                     CircleAvatar(
-                                      child: Text(
-                                          perfil[index].trabajando == "Libre"
-                                              ? "SI"
-                                              : "NO"),
+                                      child: Text(perfil[index].trabajando ==
+                                              "En servicio"
+                                          ? "NO"
+                                          : "SI"),
                                       backgroundColor:
-                                          perfil[index].trabajando == "Libre"
-                                              ? Colors.green
-                                              : Colors.red,
+                                          perfil[index].trabajando ==
+                                                  "En servicio"
+                                              ? Colors.red
+                                              : Colors.green,
                                     ),
                                   ],
                                 ),
@@ -123,7 +135,8 @@ class PerfilPersonal extends StatelessWidget {
                             SizedBox(
                               height: 20,
                             ),
-                            Text('Credenciales'),
+                            Text('Credenciales',
+                                style: TextStyle(fontSize: 18)),
                             SizedBox(
                               height: 20,
                             ),
@@ -167,16 +180,16 @@ class PerfilPersonal extends StatelessWidget {
   }
 }
 
-void confirmarEliminar(context, ideliminar, List<Cita> citasPendientes) {
+confirmarEliminar(context, ideliminar, List<Cita> citasPendientes) {
   showDialog(
     context: context,
     builder: (BuildContext context) {
       return AlertDialog(
         content: Column(children: [
-          Text('Realmente Desea Eliminar?'),
-          Text('Aún tiene ' +
+          Text('Realmente Desea Eliminar a este personal medico?'),
+          Text('Se eliminaran' +
               citasPendientes.length.toString() +
-              ' citas pendientes'),
+              ' citas aún pendientes'),
         ]),
         actions: <Widget>[
           ElevatedButton(
@@ -185,7 +198,8 @@ void confirmarEliminar(context, ideliminar, List<Cita> citasPendientes) {
             ),
             child: Icon(Icons.cancel),
             onPressed: () => {
-            Navigator.pop(context)},
+              Navigator.pop(context),
+            },
           ),
           ElevatedButton(
             style: ButtonStyle(
@@ -196,6 +210,8 @@ void confirmarEliminar(context, ideliminar, List<Cita> citasPendientes) {
               DatabaseService(uid: ideliminar)
                   .eliminarPersonal(citasPendientes);
               Navigator.pop(context);
+              Navigator.pushReplacement(
+                  context, MaterialPageRoute(builder: (_) => Principal()));
             },
           ),
         ],
