@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:libro_de_cobros/entidades/cita.dart';
 import 'package:libro_de_cobros/servicios/auth.dart';
+import 'package:libro_de_cobros/servicios/database.dart';
 import 'package:libro_de_cobros/servicios/pdf_api.dart';
 import 'package:libro_de_cobros/vistas/generalWidgets/loading.dart';
 import 'package:libro_de_cobros/vistas/perfil/perfilCita.dart';
@@ -22,6 +23,22 @@ class _ListaCitasState extends State<ListaCitas> {
     var lista;
     try {
       final _listaCitas = Provider.of<List<Cita>>(context);
+      if (_listaCitas.isNotEmpty) {
+        for (var cita in _listaCitas) {
+          if (DateTime.parse(cita.fechaHora).isBefore(DateTime.now())&&cita.estado.contains("Asignado")){
+            DatabaseService().insertarDatosCita(
+                  cita.uidPersonalMedico,
+                  cita.nombrePersonalMedico,
+                  cita.idPaciente,
+                  cita.nombrePaciente,
+                  DateTime.parse(cita.fechaHora),
+                  cita.hora,
+                  "No atendido",
+                  cita.urlImagen,
+                  idCita: cita.idCita);
+          }
+        }
+      }
       PdfApi.generarTablaCita(_listaCitas);
       lista = ListView.builder(
           itemCount: _listaCitas.length,
@@ -58,6 +75,9 @@ class _ListaCitasState extends State<ListaCitas> {
                 Text(
                   _listaCitas[index].estado,
                   textAlign: TextAlign.right,
+                  style: TextStyle(color: _listaCitas[index].estado=="No atendido"
+                            ? Colors.red
+                            : Colors.grey[550])
                 ),
               ]),
               leading: CircleAvatar(

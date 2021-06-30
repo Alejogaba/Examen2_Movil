@@ -1,16 +1,24 @@
-import 'package:libro_de_cobros/entidades/cita.dart';
 import 'package:libro_de_cobros/entidades/paciente.dart';
 import 'package:libro_de_cobros/servicios/database.dart';
 import 'package:libro_de_cobros/vistas/formularios/adicionarModificarPaciente.dart';
 import 'package:flutter/material.dart';
+import 'package:libro_de_cobros/vistas/generalWidgets/call_icons_icons.dart';
 import 'package:libro_de_cobros/vistas/inicio/principal.dart';
+import 'package:libro_de_cobros/vistas/inicio/ventanaListaCitasdePaciente.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class PerfilPaciente extends StatelessWidget {
   final index;
   final List<Paciente> perfil;
   final bool modoSoloLectura;
-  List<Cita> citasPendientes = [];
-  PerfilPaciente({Key key, this.perfil, this.index, this.modoSoloLectura});
+  final int citasPendientes;
+  PerfilPaciente(
+      {Key key,
+      this.perfil,
+      this.index,
+      this.modoSoloLectura,
+      this.citasPendientes});
 
   @override
   Widget build(BuildContext context) {
@@ -38,17 +46,24 @@ class PerfilPaciente extends StatelessWidget {
     var iconoEliminar = IconButton(
         icon: Icon(Icons.delete),
         onPressed: () async {
-          citasPendientes = await DatabaseService()
-              .citasPendientesPaciente(perfil[index].identificacion);
-          await confirmarEliminar(
-              context, perfil[index].identificacion, citasPendientes);
+          await confirmarEliminar(context, perfil[index].identificacion);
         });
+    var botonListaCitas = ElevatedButton(
+        onPressed: () async {
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (_) => VentanaListaCitasdePaciente(
+                      uid: perfil[index].identificacion)));
+        },
+        child: Text("+ Ver citas asignadas"));
     return Scaffold(
       appBar: AppBar(title: Text('Perfil Paciente'), actions: [
         (modoSoloLectura == false || modoSoloLectura == null)
             ? iconoModificar
             : SizedBox(),
-        (modoSoloLectura == false || modoSoloLectura == null)
+        (modoSoloLectura == false ||
+                modoSoloLectura == null && citasPendientes == 0)
             ? iconoEliminar
             : SizedBox()
       ]),
@@ -147,6 +162,27 @@ class PerfilPaciente extends StatelessWidget {
                               children: [
                                 Text('Teléfono: '),
                                 Text(perfil[index].telefono),
+                                ElevatedButton(
+                                    onPressed: () async {
+                                      final url ='tel:'+perfil[index].telefono;
+                                      if (await canLaunch(url)) {
+                                        await launch(url);
+                                      } else {
+                                        throw 'Could not launch $url';
+                                      }
+                                    },
+                                    child: Icon(Icons.call)),
+                                    
+                                     ElevatedButton(
+                                    onPressed: () async {
+                                      final url ="https://wa.me/57" + perfil[index].telefono;
+                                      if (await canLaunch(url)) {
+                                        await launch(url);
+                                      } else {
+                                        throw 'Could not launch $url';
+                                      }
+                                    },
+                                    child: Icon(Icons.whatsapp)),
                               ],
                             ),
                             SizedBox(height: 20),
@@ -176,14 +212,34 @@ class PerfilPaciente extends StatelessWidget {
                               children: [
                                 Text('Dirección: '),
                                 Text(perfil[index].direccion),
+                                ElevatedButton(
+                                    onPressed: () async {
+                                      final url =
+                                          'https://www.google.com/maps/search/barrio+'+perfil[index].barrio.replaceAll(' ', '+')+',+' +
+                                              perfil[index].ciudad +
+                                              ',+Colombia';
+                                      if (await canLaunch(url)) {
+                                        await launch(url);
+                                      } else {
+                                        throw 'Could not launch $url';
+                                      }
+                                    },
+                                    child: Text("+ Ver en mapa")),
                               ],
                             ),
                             SizedBox(
                               height: 20,
                             ),
+                            citasPendientes > 0
+                                ? Text(
+                                    'Citas asignadas: ' +
+                                        citasPendientes.toString(),
+                                    style: TextStyle(fontSize: 18))
+                                : SizedBox(),
+                            citasPendientes > 0 ? botonListaCitas : SizedBox(),
                           ],
                         ),
-                      )
+                      ),
                     ],
                   ),
                 ),
@@ -204,16 +260,24 @@ class PerfilPaciente extends StatelessWidget {
   }
 }
 
-confirmarEliminar(context, ideliminar, List<Cita> citasPendientes) {
+formatoDireccion(String direccion) {
+  String dir;
+  if (direccion.contains('#')) {
+    dir = direccion.split('#')[0];
+    return dir.replaceAll(' ', '+');
+  } else {
+    return direccion.replaceAll(' ', '+');
+  }
+}
+
+confirmarEliminar(context, ideliminar) {
   showDialog(
     context: context,
     builder: (BuildContext context) {
       return AlertDialog(
         content: Column(children: [
-          Text('¿Realmente Desea Eliminar a este paciente?'), SizedBox(height: 2),
-          Text('Se eliminaran ' +
-              citasPendientes.length.toString() +
-              ' citas aún pendientes'),
+          Text('¿Realmente Desea Eliminar a este paciente?'),
+          SizedBox(height: 2),
         ]),
         actions: <Widget>[
           ElevatedButton(
@@ -229,7 +293,7 @@ confirmarEliminar(context, ideliminar, List<Cita> citasPendientes) {
             ),
             child: Icon(Icons.check_circle),
             onPressed: () {
-              DatabaseService().eliminarPaciente(citasPendientes, ideliminar);
+              DatabaseService().eliminarPaciente(ideliminar);
               Navigator.pop(context);
               Navigator.pushReplacement(
                   context, MaterialPageRoute(builder: (_) => Principal()));

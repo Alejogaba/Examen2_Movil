@@ -1,4 +1,5 @@
 import 'dart:io';
+
 import 'package:day_night_time_picker/day_night_time_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:libro_de_cobros/entidades/paciente.dart';
@@ -6,12 +7,34 @@ import 'package:libro_de_cobros/entidades/personal.dart';
 import 'package:libro_de_cobros/servicios/database.dart';
 import 'package:libro_de_cobros/vistas/formularios/buscarPaciente.dart';
 import 'package:libro_de_cobros/vistas/formularios/buscarPersonal.dart';
-import 'package:libro_de_cobros/vistas/generalWidgets/customTextFormField.dart';
 import 'package:libro_de_cobros/vistas/generalWidgets/loading.dart';
 
 class AgendarCita extends StatefulWidget {
+  final Paciente pacienteEdit;
+  final Personal personalEdit;
+  final String fechaEdit;
+  final String horaEdit;
+  final String estadoEdit;
+  final String idCitaEdit;
+
+  const AgendarCita(
+      {Key key,
+      this.idCitaEdit,
+      this.pacienteEdit,
+      this.personalEdit,
+      this.fechaEdit,
+      this.horaEdit,
+      this.estadoEdit})
+      : super(key: key);
+
   @override
-  _AgendarCitaState createState() => _AgendarCitaState();
+  _AgendarCitaState createState() => _AgendarCitaState(
+      this.idCitaEdit,
+      this.pacienteEdit,
+      this.personalEdit,
+      this.fechaEdit,
+      this.horaEdit,
+      this.estadoEdit);
 }
 
 class _AgendarCitaState extends State<AgendarCita> {
@@ -32,30 +55,66 @@ class _AgendarCitaState extends State<AgendarCita> {
   String uidPersonal;
   String idPaciente;
   String urlImagenPaciente;
-  String estadosCita="No atendido";
+  String estadosCita = "Asignado";
   int horaReloj = 0;
   int minutoReloj = 0;
   File imageFile;
   Personal personal;
   TimeOfDay hora = TimeOfDay.now();
   bool loading = true;
+  Paciente pacienteEdit;
+  Personal personalEdit;
+  String fechaEditString;
+  String horaEdit;
+  String estadoEdit;
+  String idCitaEdit;
+  String idCita;
 
   DateTime fechaSeleccionada;
-  DateTime fechaNacimiento;
-
+  DateTime fechaEdit;
   bool estaActivo = false;
   bool estaTrabajando = false;
   final _formKey = GlobalKey<FormState>();
 
+  _AgendarCitaState(this.idCitaEdit, this.pacienteEdit, this.personalEdit,
+      this.fechaEditString, this.horaEdit, this.estadoEdit);
+
   @override
   void initState() {
-    if (fechaNacimiento != null) {
-      fechaSeleccionada = fechaNacimiento;
+    if (fechaEditString != null) {
+      fechaSeleccionada = DateTime.parse(fechaEditString);
     } else {
       fechaSeleccionada = DateTime.now();
     }
+    if (idCitaEdit != null) {
+      idCita = idCitaEdit;
+      print("Id de la cita" + idCita);
+    }
+    if (pacienteEdit != null) {
+      controlPaciente.text = pacienteEdit.nombre + " " + pacienteEdit.apellido;
+      idPaciente = pacienteEdit.identificacion;
+      urlImagenPaciente = pacienteEdit.urlImagen;
+      print("Url de imagen " + urlImagenPaciente);
+    }
+    if (personalEdit != null) {
+      controlPersonal.text = personalEdit.nombre + " " + personalEdit.apellido;
+      uidPersonal = personalEdit.uid;
+    }
+    if (horaEdit != null) {
+      controlTiempo.text = horaEdit;
+      int hour = int.parse(horaEdit.split(':')[0]);
+      int minute = int.parse(horaEdit.split(':')[1].split(' ')[0]);
+      hora = TimeOfDay.fromDateTime(DateTime.parse(fechaEditString));
+    }
+    if (estadoEdit != null) {
+      estadosCita = estadoEdit;
+    }
     if (urlImagen != null) {
-      controladorimagenUrl.text = urlImagen;
+      if (pacienteEdit.urlImagen != null) {
+        controladorimagenUrl.text = pacienteEdit.urlImagen;
+      } else {
+        controladorimagenUrl.text = urlImagen;
+      }
     } else {
       controladorimagenUrl.text =
           "https://www.adl-logistica.org/wp-content/uploads/2019/07/imagen-perfil-sin-foto-300x300.png";
@@ -193,35 +252,36 @@ class _AgendarCitaState extends State<AgendarCita> {
                           )),
                     ),
                   ),
-                  
                   Padding(
                     padding: EdgeInsets.all(25.0),
                     child: DropdownButton(
-                      value: estadosCita,
-                      items: [
-                        DropdownMenuItem(
-                          child: Text("Estado de la cita: No atendido"),
-                          value: "No atendido",
-                        ),
-                        DropdownMenuItem(
-                          child: Text("Estado de la cita: Atendido"),
-                          value: "Atendido",
-                        ),
-                        DropdownMenuItem(
-                          child: Text("Estado de la cita: En servicio"),
-                          value: "En servicio",
-                        ),
-                        DropdownMenuItem(
-                            child: Text("Estado de la cita: Asignado"), value: "Asignado"),
-                        DropdownMenuItem(
-                            child: Text("Estado de la cita: Anulado"), value: "Anulado")
-                      ],
-                      onChanged: (value) {
-                        setState(() {
-                          estadosCita= value;
-                        });
-                      }),
-                      ),
+                        value: estadosCita,
+                        items: [
+                          DropdownMenuItem(
+                            child: Text("Estado de la cita: No atendido"),
+                            value: "No atendido",
+                          ),
+                          DropdownMenuItem(
+                            child: Text("Estado de la cita: Atendido"),
+                            value: "Atendido",
+                          ),
+                          DropdownMenuItem(
+                            child: Text("Estado de la cita: En servicio"),
+                            value: "En servicio",
+                          ),
+                          DropdownMenuItem(
+                              child: Text("Estado de la cita: Asignado"),
+                              value: "Asignado"),
+                          DropdownMenuItem(
+                              child: Text("Estado de la cita: Anulado"),
+                              value: "Anulado")
+                        ],
+                        onChanged: (value) {
+                          setState(() {
+                            estadosCita = value;
+                          });
+                        }),
+                  ),
                   ElevatedButton(
                     child: Text("Asignar cita"),
                     onPressed: () async {
@@ -236,7 +296,8 @@ class _AgendarCitaState extends State<AgendarCita> {
                                 hours: horaReloj, minutes: minutoReloj)),
                             controlTiempo.text,
                             estadosCita,
-                            urlImagenPaciente);
+                            urlImagenPaciente,
+                            idCita: idCita);
                         Navigator.pop(context);
                       }
                     },
@@ -266,7 +327,7 @@ class _AgendarCitaState extends State<AgendarCita> {
     final DateTime picked = await showDatePicker(
         context: context,
         initialDate: fechaSeleccionada,
-        firstDate: DateTime.now(),
+        firstDate: DateTime.now().add(Duration(days: -365)),
         lastDate: DateTime.now().add(Duration(days: 365)));
     if (picked != null && picked != fechaSeleccionada)
       setState(() {

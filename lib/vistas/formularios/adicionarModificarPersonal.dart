@@ -1,12 +1,11 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:fluttertoast/fluttertoast.dart';
+
 import 'package:image_picker/image_picker.dart';
 import 'package:libro_de_cobros/servicios/auth.dart';
 import 'package:libro_de_cobros/servicios/database.dart';
 import 'package:libro_de_cobros/servicios/imageStorage.dart';
 import 'package:libro_de_cobros/vistas/generalWidgets/customTextFormField.dart';
-import 'package:libro_de_cobros/vistas/generalWidgets/loading.dart';
 
 class AdicionarModificarPersonal extends StatefulWidget {
   final nombre;
@@ -254,16 +253,6 @@ class _AdicionarModificarPersonalState
                   onChanged: (bool value) {
                     setState(() {
                       estaActivo = value;
-                    });
-                  },
-                ),
-                SwitchListTile(
-                  title: Text('¿Esta trabajando?'),
-                  value: estaTrabajando,
-                  onChanged: (bool value) {
-                    setState(() {
-                      estaTrabajando = value;
-                      trabajando = value ? "En servicio" : "Libre";
                     });
                   },
                 ),

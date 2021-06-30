@@ -1,20 +1,28 @@
-import 'package:libro_de_cobros/entidades/cita.dart';
 import 'package:libro_de_cobros/servicios/database.dart';
 import 'package:libro_de_cobros/vistas/formularios/adicionarModificarPersonal.dart';
 import 'package:libro_de_cobros/entidades/personal.dart';
 import 'package:flutter/material.dart';
 import 'package:libro_de_cobros/vistas/inicio/principal.dart';
+import 'package:libro_de_cobros/vistas/inicio/ventanaListaCitasdePersonal.dart';
 
 // ignore: must_be_immutable
 class PerfilPersonal extends StatelessWidget {
   final index;
   final bool modoSoloLectura;
   final List<Personal> perfil;
-  List<Cita> citasPendientes = [];
-  PerfilPersonal({Key key, this.perfil, this.index, this.modoSoloLectura});
+  final int citasPendientes;
+  final int citasAsignadas;
+  PerfilPersonal(
+      {Key key,
+      this.perfil,
+      this.index,
+      this.modoSoloLectura,
+      this.citasPendientes,
+      this.citasAsignadas});
 
   @override
   Widget build(BuildContext context) {
+    print(citasPendientes);
     var iconoModificar = IconButton(
         icon: Icon(Icons.edit),
         onPressed: () async {
@@ -36,16 +44,24 @@ class PerfilPersonal extends StatelessWidget {
     var iconoEliminar = IconButton(
         icon: Icon(Icons.delete),
         onPressed: () async {
-          citasPendientes = await DatabaseService()
-              .citasPendientesPersonal(perfil[index].uid);
-          await confirmarEliminar(context, perfil[index].uid, citasPendientes);
+          await confirmarEliminar(context, perfil[index].uid);
         });
+    var botonListaCitas = ElevatedButton(
+        onPressed: () async {
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (_) =>
+                      VentanaListaCitasdePersonal(uid: perfil[index].uid)));
+        },
+        child: Text("+ Ver citas asignadas"));
     return Scaffold(
       appBar: AppBar(title: Text('Perfil personal medico'), actions: [
         (modoSoloLectura == false || modoSoloLectura == null)
             ? iconoModificar
             : SizedBox(),
-        (modoSoloLectura == false || modoSoloLectura == null)
+        (modoSoloLectura == false ||
+                modoSoloLectura == null && citasAsignadas == 0)
             ? iconoEliminar
             : SizedBox()
       ]),
@@ -118,15 +134,11 @@ class PerfilPersonal extends StatelessWidget {
                                   children: [
                                     Text('Libre'),
                                     CircleAvatar(
-                                      child: Text(perfil[index].trabajando ==
-                                              "En servicio"
-                                          ? "NO"
-                                          : "SI"),
-                                      backgroundColor:
-                                          perfil[index].trabajando ==
-                                                  "En servicio"
-                                              ? Colors.red
-                                              : Colors.green,
+                                      child: Text(
+                                          citasPendientes > 0 ? "NO" : "SI"),
+                                      backgroundColor: citasPendientes > 0
+                                          ? Colors.red
+                                          : Colors.green,
                                     ),
                                   ],
                                 ),
@@ -157,6 +169,16 @@ class PerfilPersonal extends StatelessWidget {
                                 ),
                               ],
                             ),
+                            SizedBox(
+                              height: 20,
+                            ),
+                            citasPendientes > 0
+                                ? Text(
+                                    'Citas pendientes: ' +
+                                        citasPendientes.toString(),
+                                    style: TextStyle(fontSize: 18))
+                                : SizedBox(),
+                            citasPendientes > 0 ? botonListaCitas : SizedBox(),
                           ],
                         ),
                       )
@@ -180,16 +202,13 @@ class PerfilPersonal extends StatelessWidget {
   }
 }
 
-confirmarEliminar(context, ideliminar, List<Cita> citasPendientes) {
+confirmarEliminar(context, ideliminar) {
   showDialog(
     context: context,
     builder: (BuildContext context) {
       return AlertDialog(
         content: Column(children: [
           Text('Realmente Desea Eliminar a este personal medico?'),
-          Text('Se eliminaran' +
-              citasPendientes.length.toString() +
-              ' citas aún pendientes'),
         ]),
         actions: <Widget>[
           ElevatedButton(
@@ -207,8 +226,7 @@ confirmarEliminar(context, ideliminar, List<Cita> citasPendientes) {
             ),
             child: Icon(Icons.check_circle),
             onPressed: () {
-              DatabaseService(uid: ideliminar)
-                  .eliminarPersonal(citasPendientes);
+              DatabaseService(uid: ideliminar).eliminarPersonal();
               Navigator.pop(context);
               Navigator.pushReplacement(
                   context, MaterialPageRoute(builder: (_) => Principal()));

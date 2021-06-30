@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:libro_de_cobros/entidades/cita.dart';
 import 'package:libro_de_cobros/entidades/personal.dart';
+import 'package:libro_de_cobros/servicios/database.dart';
 import 'package:libro_de_cobros/servicios/pdf_api.dart';
 import 'package:libro_de_cobros/vistas/generalWidgets/loading.dart';
 import 'package:libro_de_cobros/vistas/perfil/perfilPersonal.dart';
@@ -21,6 +23,8 @@ class _ListaPersonalState extends State<ListaPersonal> {
   bool modoSeleccionar;
   BuildContext contextPadre;
   bool adiccionarPersonalInactivo = false;
+  List<Cita> citasPendientes = [];
+  List<Cita> citasAsignadas = [];
   _ListaPersonalState(this.modoSeleccionar, this.contextPadre);
 
   @override
@@ -41,11 +45,14 @@ class _ListaPersonalState extends State<ListaPersonal> {
             return ListTile(
               onTap: () async {
                 if (modoSeleccionar == false || modoSeleccionar == null) {
+                  citasPendientes = await DatabaseService().citasPendientesPersonal(_listaPersonal[index].uid);
+                  print(citasPendientes.length.toString() + ' citas pendientes');
+                  citasAsignadas = await DatabaseService().citasAsignadasPersonal(_listaPersonal[index].uid);
                   Navigator.push(
                       context,
                       MaterialPageRoute(
                           builder: (_) => PerfilPersonal(
-                              perfil: _listaPersonal, index: index)));
+                              perfil: _listaPersonal, index: index,citasPendientes: citasPendientes.length,citasAsignadas: citasAsignadas.length)));
                 } else {
                   if (_listaPersonal[index].estadoActivo == false) {
                     await cajaAdvertencia(context, _listaPersonal[index].tipo);

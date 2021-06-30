@@ -3,7 +3,7 @@ import 'package:libro_de_cobros/entidades/usuario.dart';
 import 'package:libro_de_cobros/vistas/autenticar/iniciarSesion.dart';
 import 'package:libro_de_cobros/vistas/inicio/principal.dart';
 import 'package:libro_de_cobros/vistas/inicio/ventanaListaCitasdePersonal.dart';
-import 'package:libro_de_cobros/vistas/inicio/ventanaListaPacientes.dart';
+
 import 'package:provider/provider.dart';
 
 class Wrapper extends StatelessWidget {

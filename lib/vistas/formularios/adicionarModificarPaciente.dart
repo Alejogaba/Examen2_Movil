@@ -5,7 +5,6 @@ import 'package:image_picker/image_picker.dart';
 import 'package:libro_de_cobros/servicios/database.dart';
 import 'package:libro_de_cobros/servicios/imageStorage.dart';
 import 'package:libro_de_cobros/vistas/generalWidgets/customTextFormField.dart';
-import 'package:libro_de_cobros/vistas/generalWidgets/loading.dart';
 
 class AdicionarModificarPaciente extends StatefulWidget {
   final nombre;
@@ -257,7 +256,8 @@ class _AdicionarModificarPacienteState
                             estaActivo,
                             controlDireccion.text,
                             controlBarrio.text,
-                            controlTelefono.text);
+                            controlTelefono.text,
+                            controlCiudad.text);
                         Navigator.pop(context);
                       } catch (e) {
                         print("Error al guardar/modificar Paciente: " +

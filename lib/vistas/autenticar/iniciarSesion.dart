@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:libro_de_cobros/servicios/auth.dart';
-import 'package:libro_de_cobros/servicios/database.dart';
 import 'package:libro_de_cobros/vistas/generalWidgets/loading.dart';
 import 'package:libro_de_cobros/vistas/inicio/principal.dart';
 import 'package:libro_de_cobros/vistas/inicio/ventanaListaCitasdePersonal.dart';

@@ -9,18 +9,18 @@ import 'package:libro_de_cobros/vistas/inicio/listaPacientes.dart';
 import 'package:provider/provider.dart';
 import 'package:libro_de_cobros/vistas/inicio/listaPersonal.dart';
 
-class VentanaListaCitasdePersonal extends StatefulWidget {
+class VentanaListaCitasdePaciente extends StatefulWidget {
   final String uid;
 
-  VentanaListaCitasdePersonal({Key key, this.uid}) : super(key: key);
+  VentanaListaCitasdePaciente({Key key, this.uid}) : super(key: key);
 
   @override
-  _VentanaListaCitasdePersonalState createState() =>
-      _VentanaListaCitasdePersonalState(this.uid);
+  _VentanaListaCitasdePacienteState createState() =>
+      _VentanaListaCitasdePacienteState(this.uid);
 }
 
-class _VentanaListaCitasdePersonalState
-    extends State<VentanaListaCitasdePersonal>
+class _VentanaListaCitasdePacienteState
+    extends State<VentanaListaCitasdePaciente>
     with SingleTickerProviderStateMixin {
   AuthService authService = new AuthService();
   String uid = '';
@@ -41,7 +41,7 @@ class _VentanaListaCitasdePersonalState
   String _uid;
   String personaluid;
 
-  _VentanaListaCitasdePersonalState(this.personaluid);
+  _VentanaListaCitasdePacienteState(this.personaluid);
 
   @override
   void initState() {
@@ -66,7 +66,7 @@ class _VentanaListaCitasdePersonalState
   Widget build(BuildContext context) {
     print('UID personal medico: ' + uid);
     var streamProvider = StreamProvider<List<Cita>>.value(
-      value: DatabaseService(uid: uid).citasPersonal,
+      value: DatabaseService(uid: uid).citasPaciente,
       initialData: null,
       child: Scaffold(
         appBar: AppBar(

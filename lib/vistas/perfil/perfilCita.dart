@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:libro_de_cobros/entidades/paciente.dart';
 import 'package:libro_de_cobros/entidades/personal.dart';
 import 'package:libro_de_cobros/servicios/database.dart';
+import 'package:libro_de_cobros/vistas/formularios/agendarCita.dart';
 import 'package:libro_de_cobros/vistas/perfil/perfilPaciente.dart';
 import 'package:libro_de_cobros/vistas/perfil/perfilPersonal.dart';
 
@@ -21,6 +22,27 @@ class _PerfilCitaState extends State<PerfilCita> {
 
   @override
   Widget build(BuildContext context) {
+    var iconoModificar = IconButton(
+        icon: Icon(Icons.edit),
+        onPressed: () {
+          Paciente pacienteEdit = new Paciente(identificacion:widget.perfil[widget.index].idPaciente,
+          nombre:widget.perfil[widget.index].nombrePaciente.split(' ')[0],apellido:widget.perfil[widget.index].nombrePaciente.split(' ')[1],
+          urlImagen:widget.perfil[widget.index].urlImagen);
+          Personal personalEdit = new Personal(uid:widget.perfil[widget.index].uidPersonalMedico,nombre:widget.perfil[widget.index].nombrePersonalMedico.split(' ')[0]
+          ,apellido:widget.perfil[widget.index].nombrePersonalMedico.split(' ')[1]);
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (_) => AgendarCita(
+                        idCitaEdit:  widget.perfil[widget.index].idCita,pacienteEdit: pacienteEdit,personalEdit: personalEdit,fechaEdit:widget.perfil[widget.index].fechaHora,
+                        horaEdit: widget.perfil[widget.index].hora,estadoEdit: widget.perfil[widget.index].estado,
+                      ))).whenComplete(() => Navigator.pop(context));
+        });
+    var iconoEliminar = IconButton(
+        icon: Icon(Icons.delete),
+        onPressed: () async {
+          
+        });
     if(estadosCita==null) estadosCita = widget.perfil[widget.index].estado;
     bool editarEstado = true;
     Text textoEtadoCita = Text('Estado de la cita: ' + widget.perfil[widget.index].estado);
@@ -70,6 +92,7 @@ class _PerfilCitaState extends State<PerfilCita> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Datos de la cita'),
+        actions: [iconoModificar],
       ),
       body: ListView(children: [
         Container(
@@ -202,7 +225,8 @@ class _PerfilCitaState extends State<PerfilCita> {
                                               builder: (_) => PerfilPersonal(
                                                   perfil: _listaPersonal,
                                                   index: 0,
-                                                  modoSoloLectura:true)));
+                                                  modoSoloLectura:true,
+                                                  citasPendientes: 0,)));
                                     },
                                     child: Text("+ Ver más")),
                                 SizedBox(

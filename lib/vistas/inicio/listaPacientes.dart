@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:libro_de_cobros/entidades/cita.dart';
 import 'package:libro_de_cobros/entidades/paciente.dart';
+import 'package:libro_de_cobros/servicios/database.dart';
 import 'package:libro_de_cobros/servicios/pdf_api.dart';
 import 'package:libro_de_cobros/vistas/generalWidgets/loading.dart';
 import 'package:libro_de_cobros/vistas/perfil/perfilPaciente.dart';
@@ -21,6 +23,7 @@ class _ListaPacientesState extends State<ListaPacientes> {
   bool adiccionarPacienteInactivo = false;
   bool modoSeleccionar;
   BuildContext contextPadre;
+  List<Cita> citasPendientes= [];
   _ListaPacientesState(this.modoSeleccionar, this.contextPadre);
 
   @override
@@ -35,7 +38,9 @@ class _ListaPacientesState extends State<ListaPacientes> {
             return ListTile(
               onTap: () async {
                 if (modoSeleccionar == false || modoSeleccionar == null) {
-                  retornarPaciente(context, _listaPacientes, index);
+                  citasPendientes = await DatabaseService().citasPendientesPaciente(_listaPacientes[index].identificacion);
+                  print(citasPendientes.length.toString() + ' citas pendientes');
+                  retornarPaciente(context, _listaPacientes, index,citasPendientes.length);
                 } else {
                   if(_listaPacientes[index].estadoActivo==false){
                     await cajaAdvertencia(context);
@@ -100,12 +105,12 @@ class _ListaPacientesState extends State<ListaPacientes> {
   }
 
   void retornarPaciente(
-      BuildContext context, List<Paciente> _listaPacientes, int index) {
+      BuildContext context, List<Paciente> _listaPacientes, int index, int citasPendientes) {
     Navigator.push(
         context,
         MaterialPageRoute(
             builder: (_) =>
-                PerfilPaciente(perfil: _listaPacientes, index: index)));
+                PerfilPaciente(perfil: _listaPacientes, index: index, citasPendientes:citasPendientes,)));
   }
 
   String esActivo(bool estado) {
