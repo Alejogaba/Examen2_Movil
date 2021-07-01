@@ -23,7 +23,7 @@ class _VentanaListaCitasState extends State<VentanaListaCitas>
   dynamic providerValue = DatabaseService().usuariosPersonal;
   String titulo = 'Lista personal de la salud';
   int tabIndex = 0;
- 
+
   final List<Tab> myTabs = <Tab>[
     new Tab(
       child: ListaPersonal(),
@@ -57,7 +57,10 @@ class _VentanaListaCitasState extends State<VentanaListaCitas>
       value: DatabaseService().citas,
       initialData: null,
       child: Scaffold(
-        body: ListaCitas(),
+        body: ListaCitas(
+          msgAtender: 'Lo atendera: ',
+          citaArchivada: false,
+        ),
       ),
     );
     return streamProvider;
@@ -79,7 +82,6 @@ class _VentanaListaCitasState extends State<VentanaListaCitas>
     }
     return age;
   }
-
 
   getUid() async {
     uid = await authService.getCurrentUid();

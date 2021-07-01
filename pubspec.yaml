@@ -38,6 +38,8 @@ dependencies:
   fluttertoast: ^8.0.7
   day_night_time_picker: ^1.0.2
   address_search_field: ^4.0.1
+  font_awesome_flutter: ^8.8.1
+  date_range_picker: ^1.0.7
  
   #flutter_map_picker: ^0.1.2
   #nominatim_location_picker: ^0.1.0+7

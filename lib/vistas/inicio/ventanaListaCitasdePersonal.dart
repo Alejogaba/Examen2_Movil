@@ -67,7 +67,7 @@ class _VentanaListaCitasdePersonalState
     print('UID personal medico: ' + uid);
     var streamProvider = StreamProvider<List<Cita>>.value(
       value: DatabaseService(uid: uid).citasPersonal,
-      initialData: null,
+      initialData: [],
       child: Scaffold(
         appBar: AppBar(
           title: Text("Citas asignadas"),
@@ -82,7 +82,7 @@ class _VentanaListaCitasdePersonalState
             ),
           ],
         ),
-        body: ListaCitas(),
+        body: ListaCitas(msgAtender: 'Lo atendera: ',citaArchivada: false,),
       ),
     );
     return streamProvider;

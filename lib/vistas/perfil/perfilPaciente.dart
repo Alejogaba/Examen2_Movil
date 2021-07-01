@@ -6,7 +6,6 @@ import 'package:libro_de_cobros/vistas/generalWidgets/call_icons_icons.dart';
 import 'package:libro_de_cobros/vistas/inicio/principal.dart';
 import 'package:libro_de_cobros/vistas/inicio/ventanaListaCitasdePaciente.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class PerfilPaciente extends StatelessWidget {
   final index;
@@ -182,7 +181,7 @@ class PerfilPaciente extends StatelessWidget {
                                         throw 'Could not launch $url';
                                       }
                                     },
-                                    child: Icon(Icons.whatsapp)),
+                                    child: Icon(CallIcons.whatsapp_1)),
                               ],
                             ),
                             SizedBox(height: 20),

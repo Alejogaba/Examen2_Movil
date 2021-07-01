@@ -34,18 +34,17 @@ class DatabaseService {
 
 //Insertar datos de paciente a firestore
   Future<void> insertarDatosPaciente(
-    String identificacion,
-    String nombre,
-    String apellido,
-    String urlImagen,
-    DateTime fechaNacimiento,
-    int edad,
-    bool estadoActivo,
-    String direccion,
-    String barrio,
-    String telefono,
-    String ciudad
-  ) async {
+      String identificacion,
+      String nombre,
+      String apellido,
+      String urlImagen,
+      DateTime fechaNacimiento,
+      int edad,
+      bool estadoActivo,
+      String direccion,
+      String barrio,
+      String telefono,
+      String ciudad) async {
     final CollectionReference collection =
         Firestore.instance.collection('Pacientes');
     return await collection.document(identificacion).setData({
@@ -84,9 +83,29 @@ class DatabaseService {
       'nombrePaciente': nombrePaciente,
       'idCita': id,
       'fechaHora': fechaHora.toString(),
+      'fechaHoraFirebase': fechaHora,
       'hora': hora,
       'estado': estado,
       'urlImagen': urlImagen,
+    });
+  }
+
+//Insertar datos de cita archivada a firestore
+  Future<void> archivarCita(Cita cita) async {
+    final CollectionReference collection =
+        Firestore.instance.collection('CitasArchivadas');
+    String id = collection.document(cita.idCita).documentID.toString();
+    return await collection.document(id).setData({
+      'uidPersonalMedico': cita.uidPersonalMedico,
+      'nombrePersonalMedico': cita.nombrePersonalMedico,
+      'idPaciente': cita.idPaciente,
+      'nombrePaciente': cita.nombrePaciente,
+      'idCita': id,
+      'fechaHora': cita.fechaHora,
+      'fechaHoraFirebase': DateTime.parse(cita.fechaHora),
+      'hora': cita.hora,
+      'estado': cita.estado,
+      'urlImagen': "https://image.flaticon.com/icons/png/512/504/504079.png",
     });
   }
 
@@ -168,8 +187,8 @@ class DatabaseService {
     QuerySnapshot _myDoc = await Firestore.instance
         .collection('Citas')
         .where('uidPersonalMedico', isEqualTo: uidPersonalMedico)
-        .where('estado', whereIn: ['Asignado','No atendido','En servicio'])
-        .getDocuments();
+        .where('estado',
+            whereIn: ['Asignado', 'No atendido', 'En servicio']).getDocuments();
     List<DocumentSnapshot> _myDocCount = _myDoc.documents;
     return _myDocCount.map((doc) {
       return Cita(
@@ -231,6 +250,30 @@ class DatabaseService {
     }).toList();
   }
 
+//Buscar las citas pendientes de los pacientes
+  citasArchivadasFiltro(DateTime fechaInicial,DateTime fechaFinal) async {
+    QuerySnapshot _myDoc = await Firestore.instance
+        .collection('CitasArchivadas')
+        .orderBy('fechaHoraFirebase')
+          .where('fechaHoraFirebase', isLessThan: fechaFinal)
+          .where('fechaHoraFirebase', isGreaterThan: fechaInicial)
+        .getDocuments();
+    List<DocumentSnapshot> _myDocCount = _myDoc.documents;
+    return _myDocCount.map((doc) {
+      return Cita(
+        uidPersonalMedico: doc.data['uidPersonalMedico'] ?? '',
+        nombrePersonalMedico: doc.data['nombrePersonalMedico'] ?? '',
+        idPaciente: doc.data['idPaciente'] ?? '',
+        nombrePaciente: doc.data['nombrePaciente'] ?? '',
+        idCita: doc.data['idCita'] ?? '',
+        fechaHora: doc.data['fechaHora'] ?? '',
+        hora: doc.data['hora'] ?? '',
+        estado: doc.data['estado'] ?? '',
+        urlImagen: doc.data['urlImagen'] ?? '',
+      );
+    }).toList();
+  }
+
   Stream<List<Paciente>> get usuariosPacientes {
     try {
       final CollectionReference collection =
@@ -252,9 +295,28 @@ class DatabaseService {
     final CollectionReference collection =
         Firestore.instance.collection('Citas');
     return collection
-        .orderBy('fechaHora')
+        .orderBy('fechaHoraFirebase')
         .snapshots()
         .map(_citasListFromSnapshot);
+  }
+
+  Stream<List<Cita>> get citasArchivadas {
+    final CollectionReference collection =
+        Firestore.instance.collection('CitasArchivadas');
+    print("Cita archivo cargada");
+    if (true) {
+      return collection
+          .orderBy('fechaHoraFirebase')
+          .snapshots()
+          .map(_citasListFromSnapshot);
+    } else {/*
+      return collection
+          .orderBy('fechaHoraFirebase')
+          .where('fechaHoraFirebase', isLessThan: fechaFinal)
+          .where('fechaHoraFirebase', isGreaterThan: fechaInicial)
+          .snapshots()
+          .map(_citasListFromSnapshot);*/
+    }
   }
 
   Stream<List<Cita>> get citasPersonal {
@@ -274,7 +336,6 @@ class DatabaseService {
         .snapshots()
         .map(_citasListFromSnapshot);
   }
-  
 
   Future<Paciente> getPaciente(String id) async {
     final CollectionReference collection =

@@ -5,18 +5,27 @@ import 'package:libro_de_cobros/servicios/database.dart';
 import 'package:libro_de_cobros/servicios/pdf_api.dart';
 import 'package:libro_de_cobros/vistas/generalWidgets/loading.dart';
 import 'package:libro_de_cobros/vistas/perfil/perfilCita.dart';
+import 'package:libro_de_cobros/vistas/perfil/perfilCitaArchivada.dart';
 import 'package:provider/provider.dart';
 
 class ListaCitas extends StatefulWidget {
-  ListaCitas({Key key}) : super(key: key);
+  final String msgAtender;
+  final bool citaArchivada;
+  ListaCitas({Key key, @required this.msgAtender, this.citaArchivada})
+      : super(key: key);
 
   @override
-  _ListaCitasState createState() => _ListaCitasState();
+  _ListaCitasState createState() =>
+      _ListaCitasState(this.msgAtender, this.citaArchivada);
 }
 
 class _ListaCitasState extends State<ListaCitas> {
   bool loading = false;
+  String msgAtender;
+  bool citaArchivada = false;
   AuthService authService = new AuthService();
+
+  _ListaCitasState(this.msgAtender, this.citaArchivada);
 
   @override
   Widget build(BuildContext context) {
@@ -25,17 +34,24 @@ class _ListaCitasState extends State<ListaCitas> {
       final _listaCitas = Provider.of<List<Cita>>(context);
       if (_listaCitas.isNotEmpty) {
         for (var cita in _listaCitas) {
-          if (DateTime.parse(cita.fechaHora).isBefore(DateTime.now())&&cita.estado.contains("Asignado")){
+          if (DateTime.parse(cita.fechaHora).isBefore(DateTime.now()) &&
+              cita.estado.contains("Asignado")) {
             DatabaseService().insertarDatosCita(
-                  cita.uidPersonalMedico,
-                  cita.nombrePersonalMedico,
-                  cita.idPaciente,
-                  cita.nombrePaciente,
-                  DateTime.parse(cita.fechaHora),
-                  cita.hora,
-                  "No atendido",
-                  cita.urlImagen,
-                  idCita: cita.idCita);
+                cita.uidPersonalMedico,
+                cita.nombrePersonalMedico,
+                cita.idPaciente,
+                cita.nombrePaciente,
+                DateTime.parse(cita.fechaHora),
+                cita.hora,
+                "No atendido",
+                cita.urlImagen,
+                idCita: cita.idCita);
+          } else {
+            if (DateTime.parse(cita.fechaHora).isBefore(DateTime.now()) &&
+                cita.estado.contains("Atendido")) {
+              DatabaseService().archivarCita(cita);
+              DatabaseService().eliminarCita(cita.idCita);
+            }
           }
         }
       }
@@ -45,11 +61,19 @@ class _ListaCitasState extends State<ListaCitas> {
           itemBuilder: (context, index) {
             return ListTile(
               onTap: () {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (_) =>
-                            PerfilCita(perfil: _listaCitas, index: index)));
+                if (!citaArchivada) {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) =>
+                              PerfilCita(perfil: _listaCitas, index: index)));
+                }else{
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) =>
+                              PerfilCitaArchivada(perfil: _listaCitas, index: index)));
+                }
               },
               onLongPress: () {
                 setState(() {});
@@ -70,15 +94,14 @@ class _ListaCitasState extends State<ListaCitas> {
                 ],
               ),
               subtitle: Row(children: [
-                Text('Lo atendera: ' + _listaCitas[index].nombrePersonalMedico),
+                Text(msgAtender + _listaCitas[index].nombrePersonalMedico),
                 Spacer(),
-                Text(
-                  _listaCitas[index].estado,
-                  textAlign: TextAlign.right,
-                  style: TextStyle(color: _listaCitas[index].estado=="No atendido"
+                Text(_listaCitas[index].estado,
+                    textAlign: TextAlign.right,
+                    style: TextStyle(
+                        color: _listaCitas[index].estado == "No atendido"
                             ? Colors.red
-                            : Colors.grey[550])
-                ),
+                            : Colors.grey[550])),
               ]),
               leading: CircleAvatar(
                 child: (_listaCitas[index].urlImagen == null ||

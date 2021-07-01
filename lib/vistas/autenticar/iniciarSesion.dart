@@ -18,6 +18,7 @@ class _IniciarSesionState extends State<IniciarSesion> {
   TextEditingController usernameController;
   TextEditingController passwordController;
   String error = '';
+  
 
   //final AuthService _auth = AuthService();
 
@@ -30,11 +31,13 @@ class _IniciarSesionState extends State<IniciarSesion> {
 
   @override
   Widget build(BuildContext context) {
-    var scafold = Scaffold(
+    final double screenHeight = MediaQuery.of(context).size.height;
+    final double keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
+    var scafold = Scaffold(    
       backgroundColor: Colors.green[100],
       appBar: AppBar(
         backgroundColor: Colors.green[600],
-        elevation: 0.0,
+       
         title: Text('Inicio de sesión'),
         /* actions: <Widget>[
           TextButton.icon(
@@ -48,74 +51,86 @@ class _IniciarSesionState extends State<IniciarSesion> {
           ),
         ],*/
       ),
-      body: Center(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Image.asset('images/flutter.png'),
-            Padding(
-              padding: EdgeInsets.only(top: 20.0),
-            ),
-            CustomTextField(
-              customController: usernameController,
-              labelText: "Nombre de usuario",
-              isPassword: false,
-            ),
-            CustomTextField(
-              customController: passwordController,
-              labelText: "Contraseña",
-              isPassword: true,
-            ),
-            SizedBox(
-              height: 50,
-              child: ElevatedButton(
-                  style: ButtonStyle(
-                      backgroundColor: MaterialStateProperty.resolveWith<Color>(
-                          (Set<MaterialState> states) {
-                        if (states.contains(MaterialState.disabled))
-                          return Colors.red;
-                        return Colors.green[600];
-                      }),
-                      shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-                          RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(18),
-                              side: BorderSide(color: Colors.lightGreen)))),
-                  onPressed: () {
-                    inicioSesion(
-                        context, usernameController, passwordController);
-                  },
-                  child: Text(
-                    "Iniciar sesión",
-                    style: TextStyle(fontSize: 25),
-                  )),
-            ),
-            Padding(
-              padding: EdgeInsets.only(top: 15.0),
-              child: FittedBox(
-                  fit: BoxFit.contain,
-                  child:
-                      null /*TextButton(
-                  child: (Text("Iniciar sesión como usuario anonimo",
-                      style: TextStyle(
-                          decoration: TextDecoration.underline,
-                          color: Colors.green,
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold))),
-                  onPressed: () {
-                    inicioSesionAnonimo(context);
-                  },
-                ),*/
-                  ),
-            ),
-            SizedBox(height: 12.0),
-            Text(
-              error,
-              style: TextStyle(color: Colors.red, fontSize: 14.0),
-            )
-          ],
+      body: SingleChildScrollView(
+      physics: NeverScrollableScrollPhysics(),
+        child: ConstrainedBox(
+        constraints: BoxConstraints(
+          minWidth: MediaQuery.of(context).size.width,
+          minHeight: MediaQuery.of(context).size.height,
         ),
+                  child: IntrinsicHeight(
+                                      child: Column(
+                                        mainAxisSize: MainAxisSize.max,
+            children: <Widget>[
+              
+              SizedBox(height: 50.0),
+              Image.asset('images/flutter.png'),
+              Padding(
+                padding: EdgeInsets.only(top: 20.0),
+              ),
+              CustomTextField(
+                customController: usernameController,
+                labelText: "Nombre de usuario",
+                isPassword: false,
+              ),
+              CustomTextField(
+                customController: passwordController,
+                labelText: "Contraseña",
+                isPassword: true,
+              ),
+              SizedBox(
+                height: 50,
+                child: ElevatedButton(
+                      style: ButtonStyle(
+                          backgroundColor: MaterialStateProperty.resolveWith<Color>(
+                              (Set<MaterialState> states) {
+                            if (states.contains(MaterialState.disabled))
+                              return Colors.red;
+                            return Colors.green[600];
+                          }),
+                          shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                              RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(18),
+                                  side: BorderSide(color: Colors.lightGreen)))),
+                      onPressed: () {
+                        inicioSesion(
+                            context, usernameController, passwordController);
+                      },
+                      child: Text(
+                        "Iniciar sesión",
+                        style: TextStyle(fontSize: 25),
+                      )),
+              ),
+              Padding(
+                padding: EdgeInsets.only(top: 15.0),
+                child: FittedBox(
+                      fit: BoxFit.contain,
+                      child:
+                          null /*TextButton(
+                      child: (Text("Iniciar sesión como usuario anonimo",
+                          style: TextStyle(
+                              decoration: TextDecoration.underline,
+                              color: Colors.green,
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold))),
+                      onPressed: () {
+                        inicioSesionAnonimo(context);
+                      },
+                    ),*/
+                      ),
+              ),
+              SizedBox(height: 20.0),
+              Text(
+                error,
+                style: TextStyle(color: Colors.red, fontSize: 14.0),
+              ),
+            ],
+          ),
+                  ),
+        ),
+        
       ),
+      
     );
     return loading ? scafold : Loading();
   }

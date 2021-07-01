@@ -5,7 +5,9 @@ import 'package:libro_de_cobros/servicios/pdf_api.dart';
 import 'package:libro_de_cobros/servicios/database.dart';
 import 'package:libro_de_cobros/vistas/autenticar/iniciarSesion.dart';
 import 'package:libro_de_cobros/vistas/formularios/agendarCita.dart';
+import 'package:libro_de_cobros/vistas/generalWidgets/themeData.dart';
 import 'package:libro_de_cobros/vistas/inicio/ventanaListaCitas.dart';
+import 'package:libro_de_cobros/vistas/inicio/ventanaListaCitasArchivadas.dart';
 import 'package:libro_de_cobros/vistas/inicio/ventanaListaPacientes.dart';
 import 'package:libro_de_cobros/vistas/formularios/adicionarModificarPaciente.dart';
 import 'package:libro_de_cobros/vistas/formularios/adicionarModificarPersonal.dart';
@@ -62,119 +64,130 @@ class _PrincipalState extends State<Principal>
     var streamProvider = StreamProvider<List<Personal>>.value(
       value: providerValue,
       initialData: null,
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text(titulo),
-          actions: [
-            IconButton(
-              icon: Icon(Icons.book),
-              onPressed: () async {
+      child: MaterialApp(
+        theme: MiTema().tema(),
+              home: Scaffold(
+          appBar: AppBar(
+            title: Text(titulo),
+            actions: [
+              IconButton(
+                icon: Icon(Icons.history),
+                onPressed: () async {
+                  Navigator.push(context,
+                      MaterialPageRoute(builder: (_) => VentanaListaCitasArchivadas()));
+                  await authService.cerrarSesion();
+                },
+              ),
+              IconButton(
+                icon: Icon(Icons.book),
+                onPressed: () async {
+                  switch (tabIndex) {
+                    case 0:
+                      await PdfApi.openFilePersonal('personal.pdf');
+                      break;
+                    case 1:
+                      await PdfApi.openFilePersonal('pacientes.pdf');
+                    break;
+                    case 2:
+                      await PdfApi.openFilePersonal('citas.pdf');
+                    break;
+                    default:
+                    await PdfApi.openFilePersonal('personal.pdf');
+                  }
+                  
+                  print('abrir pdf');
+                },
+              ),
+              IconButton(
+                icon: Icon(Icons.logout),
+                onPressed: () async {
+                  Navigator.pushReplacement(context,
+                      MaterialPageRoute(builder: (_) => IniciarSesion()));
+                  await authService.cerrarSesion();
+                },
+              ),
+            ],
+            bottom: TabBar(
+              onTap: (index) {
+                setState(() {
+                  tabIndex = index;
+                  print(index);
+                  switch (index) {
+                    case 0:
+                      titulo = 'Lista de personal de la salud';
+                      break;
+                    case 1:
+                      titulo = 'Lista de pacientes';
+                      break;
+                    case 2:
+                      titulo = 'Citas';
+                      break;
+                    default:
+                      titulo = 'Lista personal de la salud';
+                      break;
+                  }
+                });
+              },
+              tabs: [
+                Tab(icon: Icon(Icons.medical_services)),
+                Tab(icon: Icon(Icons.person)),
+                Tab(icon: Icon(Icons.view_agenda)),
+              ],
+              controller: _tabController,
+            ),
+          ),
+          body: TabBarView(controller: _tabController, children: [
+            ListaPersonal(),
+            VentanaListaPacientes(),
+            VentanaListaCitas(),
+          ]),
+          floatingActionButton: FloatingActionButton(
+            onPressed: () async {
+              setState(() async {
                 switch (tabIndex) {
                   case 0:
-                    await PdfApi.openFilePersonal('personal.pdf');
+                    await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) => AdicionarModificarPersonal()));
+                    setState(() {
+                      abrirPdf = 0;
+                    });
                     break;
                   case 1:
-                    await PdfApi.openFilePersonal('pacientes.pdf');
-                  break;
-                  case 2:
-                    await PdfApi.openFilePersonal('citas.pdf');
-                  break;
-                  default:
-                  await PdfApi.openFilePersonal('personal.pdf');
-                }
-                
-                print('abrir pdf');
-              },
-            ),
-            IconButton(
-              icon: Icon(Icons.logout),
-              onPressed: () async {
-                Navigator.pushReplacement(context,
-                    MaterialPageRoute(builder: (_) => IniciarSesion()));
-                await authService.cerrarSesion();
-              },
-            ),
-          ],
-          bottom: TabBar(
-            onTap: (index) {
-              setState(() {
-                tabIndex = index;
-                print(index);
-                switch (index) {
-                  case 0:
-                    titulo = 'Lista de personal de la salud';
-                    break;
-                  case 1:
-                    titulo = 'Lista de pacientes';
+                    await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) => AdicionarModificarPaciente(
+                                  modoEditar: false,
+                                )));
+                    setState(() {
+                      abrirPdf = 1;
+                    });
                     break;
                   case 2:
-                    titulo = 'Citas';
+                    await Navigator.push(context,
+                        MaterialPageRoute(builder: (_) => AgendarCita()));
+                    setState(() {
+                      abrirPdf = 2;
+                    });
                     break;
                   default:
-                    titulo = 'Lista personal de la salud';
+                    await Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) => AdicionarModificarPersonal()));
+                    setState(() {
+                      abrirPdf = 0;
+                    });
                     break;
                 }
               });
             },
-            tabs: [
-              Tab(icon: Icon(Icons.medical_services)),
-              Tab(icon: Icon(Icons.person)),
-              Tab(icon: Icon(Icons.view_agenda)),
-            ],
-            controller: _tabController,
+            child: Icon(Icons.add),
           ),
+          floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
         ),
-        body: TabBarView(controller: _tabController, children: [
-          ListaPersonal(),
-          VentanaListaPacientes(),
-          VentanaListaCitas(),
-        ]),
-        floatingActionButton: FloatingActionButton(
-          onPressed: () async {
-            setState(() async {
-              switch (tabIndex) {
-                case 0:
-                  await Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (_) => AdicionarModificarPersonal()));
-                  setState(() {
-                    abrirPdf = 0;
-                  });
-                  break;
-                case 1:
-                  await Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (_) => AdicionarModificarPaciente(
-                                modoEditar: false,
-                              )));
-                  setState(() {
-                    abrirPdf = 1;
-                  });
-                  break;
-                case 2:
-                  await Navigator.push(context,
-                      MaterialPageRoute(builder: (_) => AgendarCita()));
-                  setState(() {
-                    abrirPdf = 2;
-                  });
-                  break;
-                default:
-                  await Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (_) => AdicionarModificarPersonal()));
-                  setState(() {
-                    abrirPdf = 0;
-                  });
-                  break;
-              }
-            });
-          },
-          child: Icon(Icons.add),
-        ),
-        floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       ),
     );
     return MaterialApp(
